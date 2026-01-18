@@ -21,7 +21,7 @@ export function PublicNavbar() {
                             <Play className="w-4 h-4 fill-current" />
                         </div>
                         <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600 dark:from-white dark:to-slate-300">
-                            Stream<span className="text-blue-600">App</span>
+                            Tirhuta
                         </span>
                     </Link>
 
