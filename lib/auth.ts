@@ -1,7 +1,5 @@
-import { NextAuthOptions } from "next-auth"
-import CredentialsProvider from "next-auth/providers/credentials"
-import { db } from "@/lib/db"
-import bcrypt from "bcryptjs"
+import { NextAuthOptions } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
 
 export const authOptions: NextAuthOptions = {
     providers: [
@@ -12,33 +10,33 @@ export const authOptions: NextAuthOptions = {
                 password: { label: "Password", type: "password" }
             },
             async authorize(credentials) {
-                if (!credentials?.email || !credentials?.password) return null;
+                try {
+                    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+                    const res = await fetch(`${apiUrl}/auth/login`, {
+                        method: "POST",
+                        body: JSON.stringify({
+                            mobile_or_email: credentials?.email,
+                            password: credentials?.password
+                        }),
+                        headers: { "Content-Type": "application/json" }
+                    });
 
-                // 1. Check for Admin Env Login
-                const adminEmail = process.env.ADMIN_EMAIL;
-                const adminPassword = process.env.ADMIN_PASSWORD;
+                    const data = await res.json();
 
-                if (credentials.email === adminEmail && credentials.password === adminPassword) {
-                    return { id: "admin", name: "Admin", email: adminEmail, role: "admin" }
-                }
-
-                // 2. Check for Database User Login
-                const user = await db.user.findUnique({
-                    where: { email: credentials.email }
-                });
-
-                if (!user || !user.passwordHash) return null;
-
-                const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
-
-                if (!isValid) return null;
-
-                return {
-                    id: user.id.toString(),
-                    name: user.fullName,
-                    email: user.email,
-                    image: user.profileImage,
-                    role: "user"
+                    if (res.ok && data.token) {
+                        return {
+                            id: data.user.id.toString(),
+                            name: data.user.full_name,
+                            email: data.user.email,
+                            image: data.user.profile_image,
+                            role: data.user.is_creator ? "creator" : "user",
+                            accessToken: data.token
+                        };
+                    }
+                    return null;
+                } catch (e) {
+                    console.error("Login Error:", e);
+                    return null;
                 }
             }
         })
@@ -49,6 +47,7 @@ export const authOptions: NextAuthOptions = {
     callbacks: {
         async jwt({ token, user }: { token: any, user: any }) {
             if (user) {
+                token.accessToken = user.accessToken;
                 token.role = user.role;
                 token.id = user.id;
             }
@@ -56,6 +55,7 @@ export const authOptions: NextAuthOptions = {
         },
         async session({ session, token }: { session: any, token: any }) {
             if (session.user) {
+                session.accessToken = token.accessToken;
                 session.user.role = token.role;
                 session.user.id = token.id;
             }
@@ -65,4 +65,4 @@ export const authOptions: NextAuthOptions = {
     session: {
         strategy: "jwt"
     }
-}
+};

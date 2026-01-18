@@ -1,28 +1,31 @@
-import { db } from '@/lib/db';
+import { fetchFromApi } from '@/lib/api';
 import Link from 'next/link';
 import { Plus, Film, PlayCircle, Eye, Star } from 'lucide-react';
 import { VideoList } from './VideoList';
 
 export default async function VideosPage() {
-    const [videos, totalVideos, totalViews, activeVideos, categories] = await Promise.all([
-        db.video.findMany({
-            where: { type: 'VIDEO' },
-            include: {
-                category: true,
-                creator: true,
-            },
-            orderBy: { createdAt: 'desc' },
-        }),
-        db.video.count({ where: { type: 'VIDEO' } }),
-        db.video.aggregate({ where: { type: 'VIDEO' }, _sum: { viewsCount: true } }),
-        db.video.count({ where: { isActive: true, type: 'VIDEO' } }),
-        db.videoCategory.findMany()
-    ]);
+    // 1. Fetch data from API instead of DB
+    const data = await fetchFromApi('/admin/videos?type=VIDEO');
+    const statsData = await fetchFromApi('/admin/stats'); // Re-use stats for totals
 
-    const topVideo = await db.video.findFirst({
-        orderBy: { viewsCount: 'desc' },
-        select: { title: true, viewsCount: true }
-    });
+    if (!data.success || !statsData.success) {
+        return <div>Error loading videos</div>;
+    }
+
+    const videos = data.videos.map((v: any) => ({
+        ...v,
+        category: { name: v.categoryName },
+        creator: { fullName: v.creatorName }
+    }));
+
+    // Derive stats from API data or simple calculations for now
+    // Ideally backend gives us these stats directly in the /videos endpoint or /stats
+    const totalVideos = statsData.videoCount;
+    const totalViews = statsData.totalViews;
+    const activeVideos = videos.filter((v: any) => v.isActive).length;
+
+    // Simplistic top video logic for frontend (or backend can provide)
+    const topVideo = videos.reduce((prev: any, current: any) => (prev.viewsCount > current.viewsCount) ? prev : current, videos[0]);
 
     return (
         <div className="space-y-8">
@@ -40,7 +43,7 @@ export default async function VideosPage() {
                 </Link>
             </div>
 
-            {/* Analytics Header */}
+            {/* Analytics Header - Same UI, different data source */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="glass-card p-6 rounded-2xl flex items-center space-x-4">
                     <div className="p-3 bg-blue-100 dark:bg-blue-500/10 rounded-xl text-blue-600 dark:text-blue-400">
@@ -57,7 +60,7 @@ export default async function VideosPage() {
                     </div>
                     <div>
                         <p className="text-sm text-slate-500 dark:text-slate-400">Total Views</p>
-                        <p className="text-2xl font-bold text-slate-900 dark:text-white">{totalViews._sum.viewsCount?.toLocaleString() || 0}</p>
+                        <p className="text-2xl font-bold text-slate-900 dark:text-white">{totalViews.toLocaleString()}</p>
                     </div>
                 </div>
                 <div className="glass-card p-6 rounded-2xl flex items-center space-x-4">
@@ -78,12 +81,12 @@ export default async function VideosPage() {
                         <p className="text-lg font-bold text-slate-900 dark:text-white line-clamp-1" title={topVideo?.title}>
                             {topVideo?.title || 'N/A'}
                         </p>
-                        <p className="text-xs text-slate-500">{topVideo?.viewsCount.toLocaleString()} views</p>
+                        <p className="text-xs text-slate-500">{topVideo?.viewsCount?.toLocaleString() || 0} views</p>
                     </div>
                 </div>
             </div>
 
-            <VideoList videos={videos} categories={categories} />
+            <VideoList videos={videos} categories={[]} />
         </div>
     );
 }

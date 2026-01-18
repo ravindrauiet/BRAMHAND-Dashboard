@@ -1,4 +1,5 @@
-import { db } from '@/lib/db';
+import { fetchFromApi } from '@/lib/api';
+import { getMusicGenres } from '../genres/actions';
 import { SongEditor } from './SongEditor';
 import { redirect } from 'next/navigation';
 
@@ -7,11 +8,12 @@ export default async function SongFormPage({ params }: { params: { id?: string }
     let song = null;
 
     if (isEditing) {
-        song = await db.song.findUnique({ where: { id: parseInt(params.id!) } });
-        if (!song) redirect('/dashboard/songs');
+        const data = await fetchFromApi(`/admin/songs/${params.id}`);
+        if (!data.success) redirect('/dashboard/songs');
+        song = data.song;
     }
 
-    const genres = await db.musicGenre.findMany();
+    const genres = await getMusicGenres();
 
     return (
         <SongEditor

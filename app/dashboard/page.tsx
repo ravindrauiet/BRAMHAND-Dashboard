@@ -1,42 +1,25 @@
-import { db } from '@/lib/db';
+import { fetchFromApi } from '@/lib/api';
 import { Users, Video, Music, PlayCircle, TrendingUp, Wallet, Bell, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
 export default async function DashboardPage() {
-    const [
-        userCount,
-        videoCount,
-        songCount,
-        totalViews,
-        creatorCount,
-        totalEarnings,
-        recentUsers,
-        recentVideos
-    ] = await Promise.all([
-        db.user.count(),
-        db.video.count(),
-        db.song.count(),
-        db.video.aggregate({ _sum: { viewsCount: true } }),
-        db.creatorProfile.count(),
-        db.creatorProfile.aggregate({ _sum: { totalEarnings: true } }),
-        db.user.findMany({
-            take: 5,
-            orderBy: { createdAt: 'desc' },
-            include: { creatorProfile: true }
-        }),
-        db.video.findMany({
-            take: 5,
-            orderBy: { createdAt: 'desc' },
-            include: { creator: true }
-        })
-    ]);
+    const data = await fetchFromApi('/admin/stats');
+
+    if (!data.success) {
+        return <div>Error loading dashboard stats</div>;
+    }
+
+    const {
+        userCount, videoCount, songCount, totalViews,
+        creatorCount, totalEarnings, recentUsers, recentVideos
+    } = data;
 
     const stats = [
         { name: 'Total Users', value: userCount, icon: Users, color: 'blue', link: '/dashboard/users' },
         { name: 'Total Videos', value: videoCount, icon: Video, color: 'pink', link: '/dashboard/videos' },
         { name: 'Total Songs', value: songCount, icon: Music, color: 'purple', link: '/dashboard/songs' },
-        { name: 'Total Views', value: totalViews._sum.viewsCount || 0, icon: PlayCircle, color: 'orange', link: '/dashboard/videos' },
+        { name: 'Total Views', value: totalViews, icon: PlayCircle, color: 'orange', link: '/dashboard/videos' },
     ];
 
     function getGradient(color: string) {
@@ -48,6 +31,9 @@ export default async function DashboardPage() {
             default: return 'from-blue-500 to-cyan-400';
         }
     }
+
+    // ... rest of the render logic remains similar, updating map iterations if needed
+    // ... (Keeping the visual code identically, just using `data` variables)
 
     return (
         <div className="space-y-8">
@@ -115,7 +101,7 @@ export default async function DashboardPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
-                                {recentUsers.map(user => (
+                                {recentUsers.map((user: any) => (
                                     <tr key={user.id} className="group">
                                         <td className="py-4 pl-2">
                                             <div className="flex items-center gap-3">
@@ -162,7 +148,7 @@ export default async function DashboardPage() {
                         <div className="mt-2">
                             <p className="text-sm text-slate-500 dark:text-slate-400">Total Payouts Generated</p>
                             <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">
-                                ₹{totalEarnings._sum.totalEarnings?.toString() || '0'}
+                                ₹{totalEarnings.toLocaleString()}
                             </p>
                         </div>
                         <div className="mt-4 flex items-center justify-between text-sm text-slate-600 dark:text-slate-300 border-t border-gray-100 dark:border-slate-800 pt-4">
@@ -181,7 +167,7 @@ export default async function DashboardPage() {
                             <Link href="/dashboard/videos" className="text-xs text-slate-500 hover:text-slate-900 dark:hover:text-white">All</Link>
                         </div>
                         <div className="space-y-4">
-                            {recentVideos.map(video => (
+                            {recentVideos.map((video: any) => (
                                 <div key={video.id} className="flex gap-3">
                                     <div className="w-16 h-10 bg-slate-200 dark:bg-slate-700 rounded-lg overflow-hidden relative flex-shrink-0">
                                         {video.thumbnailUrl && <Image src={video.thumbnailUrl} alt={video.title} fill className="object-cover" />}

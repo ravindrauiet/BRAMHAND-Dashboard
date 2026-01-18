@@ -1,0 +1,25 @@
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
+export async function fetchFromApi(endpoint: string, options: RequestInit = {}) {
+    const session = await getServerSession(authOptions);
+    // @ts-ignore
+    const token = session?.accessToken;
+
+    const headers = {
+        "Content-Type": "application/json",
+        ...options.headers,
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+    };
+
+    const res = await fetch(`${API_URL}${endpoint}`, { ...options, headers });
+
+    if (!res.ok) {
+        // Handle common errors or throw
+        const errorBody = await res.text();
+        throw new Error(`API Error ${res.status}: ${errorBody}`);
+    }
+    return res.json();
+}

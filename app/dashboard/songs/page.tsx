@@ -1,25 +1,31 @@
-import { db } from '@/lib/db';
+import { fetchFromApi } from '@/lib/api';
 import Link from 'next/link';
 import { Plus, Music, Mic2, Disc, Star } from 'lucide-react';
 import { SongList } from './SongList';
 
 export default async function SongsPage() {
-    const [songs, totalSongs, genres] = await Promise.all([
-        db.song.findMany({
-            include: {
-                genre: true,
-            },
-            orderBy: { createdAt: 'desc' },
-        }),
-        db.song.count(),
-        db.musicGenre.findMany()
-    ]);
+    // 1. Fetch from API
+    const data = await fetchFromApi('/admin/songs');
+    const statsData = await fetchFromApi('/admin/stats');
 
-    // Simple aggregations
-    // Group songs by genre to find top genre
+    // Ideally fetch genres too if needed for filtering
+    // const genresData = await fetchFromApi('/admin/genres/music');
+
+    if (!data.success || !statsData.success) {
+        return <div>Error loading songs</div>;
+    }
+
+    const songs = data.songs.map((s: any) => ({
+        ...s,
+        genre: { name: s.genreName }
+    }));
+
+    const activeSongs = songs.filter((s: any) => s.isActive).length;
+    const totalSongs = statsData.songCount;
+
     const genreCounts: { [key: string]: number } = {};
-    songs.forEach(s => {
-        const name = s.genre.name;
+    songs.forEach((s: any) => {
+        const name = s.genre?.name || 'Unknown';
         genreCounts[name] = (genreCounts[name] || 0) + 1;
     });
 
@@ -31,8 +37,6 @@ export default async function SongsPage() {
             topGenre = name;
         }
     });
-
-    const activeSongs = songs.filter(s => s.isActive).length;
 
     return (
         <div className="space-y-8">
@@ -86,13 +90,13 @@ export default async function SongsPage() {
                     <div>
                         <p className="text-sm text-slate-500 dark:text-slate-400">Most Featured</p>
                         <p className="text-xl font-bold text-slate-900 dark:text-white line-clamp-1">
-                            {songs.filter(s => s.isFeatured).length} Tracks
+                            {songs.filter((s: any) => s.isFeatured).length} Tracks
                         </p>
                     </div>
                 </div>
             </div>
 
-            <SongList songs={songs} genres={genres} />
+            <SongList songs={songs} genres={[]} />
         </div>
     );
 }

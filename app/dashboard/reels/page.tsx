@@ -1,28 +1,33 @@
-import { db } from '@/lib/db';
+import { fetchFromApi } from '@/lib/api';
 import Link from 'next/link';
 import { Plus, Film, PlayCircle, Eye, Star } from 'lucide-react';
 import { VideoList } from './VideoList';
 
-export default async function VideosPage() {
-    const [videos, totalVideos, totalViews, activeVideos, categories] = await Promise.all([
-        db.video.findMany({
-            where: { type: 'REEL' },
-            include: {
-                category: true,
-                creator: true,
-            },
-            orderBy: { createdAt: 'desc' },
-        }),
-        db.video.count({ where: { type: 'REEL' } }),
-        db.video.aggregate({ where: { type: 'REEL' }, _sum: { viewsCount: true } }),
-        db.video.count({ where: { isActive: true, type: 'REEL' } }),
-        db.videoCategory.findMany()
-    ]);
+export default async function ReelsPage() {
+    // 1. Fetch from API (type=REEL)
+    const data = await fetchFromApi('/admin/videos?type=REEL');
+    const statsData = await fetchFromApi('/admin/stats');
 
-    const topVideo = await db.video.findFirst({
-        orderBy: { viewsCount: 'desc' },
-        select: { title: true, viewsCount: true }
-    });
+    if (!data.success || !statsData.success) {
+        return <div>Error loading reels</div>;
+    }
+
+    const videos = data.videos.map((v: any) => ({
+        ...v,
+        category: { name: v.categoryName },
+        creator: { fullName: v.creatorName }
+    }));
+
+    // Derive stats from API data for Reels specifically if possible, 
+    // or fallback to generic stats if backend doesn't split yet.
+    // For improved accuracy, backend /stats should split videos vs reels.
+    // For now, we will filter client side or just use the count from the list if pagination wasn't strict.
+    // Note: getAllVideos is paginated? If not, we have all length.
+
+    const totalVideos = videos.length;
+    const totalViews = videos.reduce((acc: number, curr: any) => acc + (curr.viewsCount || 0), 0);
+    const activeVideos = videos.filter((v: any) => v.isActive).length;
+    const topVideo = videos.reduce((prev: any, current: any) => (prev.viewsCount > current.viewsCount) ? prev : current, videos[0]);
 
     return (
         <div className="space-y-8">
@@ -57,7 +62,7 @@ export default async function VideosPage() {
                     </div>
                     <div>
                         <p className="text-sm text-slate-500 dark:text-slate-400">Total Views</p>
-                        <p className="text-2xl font-bold text-slate-900 dark:text-white">{totalViews._sum.viewsCount?.toLocaleString() || 0}</p>
+                        <p className="text-2xl font-bold text-slate-900 dark:text-white">{totalViews.toLocaleString()}</p>
                     </div>
                 </div>
                 <div className="glass-card p-6 rounded-2xl flex items-center space-x-4">
@@ -78,12 +83,12 @@ export default async function VideosPage() {
                         <p className="text-lg font-bold text-slate-900 dark:text-white line-clamp-1" title={topVideo?.title}>
                             {topVideo?.title || 'N/A'}
                         </p>
-                        <p className="text-xs text-slate-500">{topVideo?.viewsCount.toLocaleString()} views</p>
+                        <p className="text-xs text-slate-500">{topVideo?.viewsCount?.toLocaleString() || 0} views</p>
                     </div>
                 </div>
             </div>
 
-            <VideoList videos={videos} categories={categories} />
+            <VideoList videos={videos} categories={[]} />
         </div>
     );
 }

@@ -7,9 +7,9 @@ export default async function CreatorsPage() {
 
     // Calculate Stats
     const totalCreators = creators.length;
-    const monetizedCreators = creators.filter(c => c.isMonetizationEnabled).length;
-    const totalEarnings = creators.reduce((sum, c) => sum + Number(c.totalEarnings), 0);
-    const pendingRequests = creators.filter(c => !c.isMonetizationEnabled).length; // Assuming disabled = pending for now
+    const monetizedCreators = creators.filter((c: any) => c.isMonetizationEnabled).length;
+    const totalEarnings = creators.reduce((sum: number, c: any) => sum + Number(c.totalEarnings), 0);
+    const pendingRequests = creators.filter((c: any) => !c.isMonetizationEnabled).length; // Assuming disabled = pending for now
 
     return (
         <div className="space-y-8">

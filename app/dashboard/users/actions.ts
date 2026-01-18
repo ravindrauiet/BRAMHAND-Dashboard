@@ -1,44 +1,48 @@
 'use server';
 
-import { db } from '@/lib/db';
+import { fetchFromApi } from '@/lib/api';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 export async function deleteUser(id: number) {
-    // In a real app, you might soft delete or just ban
-    // For now, allow delete but it cascades so be careful
-    await db.user.delete({ where: { id } });
-    revalidatePath('/dashboard/users');
+    try {
+        await fetchFromApi(`/admin/users/${id}`, { method: 'DELETE' });
+        revalidatePath('/dashboard/users');
+    } catch (e) {
+        console.error("Delete failed", e);
+    }
 }
 
 export async function toggleUserCreatorStatus(id: number, isCreator: boolean) {
-    await db.user.update({ where: { id }, data: { isCreator } });
-    revalidatePath('/dashboard/users');
+    try {
+        await fetchFromApi(`/admin/users/${id}/status`, {
+            method: 'PATCH',
+            body: JSON.stringify({ isCreator }),
+        });
+        revalidatePath('/dashboard/users');
+    } catch (e) {
+        console.error("Toggle Creator failed", e);
+    }
 }
 
 export async function toggleUserVerifiedStatus(id: number, isVerified: boolean) {
-    await db.user.update({ where: { id }, data: { isVerified } });
-    revalidatePath('/dashboard/users');
+    try {
+        await fetchFromApi(`/admin/users/${id}/status`, {
+            method: 'PATCH',
+            body: JSON.stringify({ isVerified }),
+        });
+        revalidatePath('/dashboard/users');
+    } catch (e) {
+        console.error("Toggle Verified failed", e);
+    }
 }
 
 export async function updateUser(id: number, formData: FormData) {
-    const fullName = formData.get('fullName') as string;
-    const email = formData.get('email') as string;
-    const mobileNumber = formData.get('mobileNumber') as string;
-    const isCreator = formData.get('isCreator') === 'on';
-    const isVerified = formData.get('isVerified') === 'on';
+    // Full User Update not fully implemented in Backend (need PUT endpoint).
+    // adminController has updateUserStatus only. 
+    // We will redirect for now or log warning.
+    console.warn("Update User Full Profile not implemented in backend");
 
-    await db.user.update({
-        where: { id },
-        data: {
-            fullName,
-            email,
-            mobileNumber,
-            isCreator,
-            isVerified,
-        },
-    });
-
-    revalidatePath('/dashboard/users');
-    redirect('/dashboard/users');
+    // Stub behavior
+    redirect(`/dashboard/users/${id}`);
 }

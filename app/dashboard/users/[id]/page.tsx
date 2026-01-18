@@ -1,40 +1,13 @@
-import { db } from '@/lib/db';
+import { fetchFromApi } from '@/lib/api';
 import { UserDetails } from '../UserDetails';
 import SocialStats from '@/components/dashboard/SocialStats';
 import { redirect } from 'next/navigation';
 
 export default async function EditUserPage({ params }: { params: { id: string } }) {
-    const user = await db.user.findUnique({
-        where: { id: parseInt(params.id) },
-        include: {
-            creatorProfile: true,
-            preferences: true,
-            videos: {
-                orderBy: { createdAt: 'desc' },
-                take: 20
-            },
-            videoViews: {
-                include: { video: true },
-                orderBy: { createdAt: 'desc' },
-                take: 20
-            },
-            videoLikes: {
-                include: { video: true },
-                orderBy: { createdAt: 'desc' },
-                take: 20
-            },
-            songLikes: {
-                include: { song: true },
-                orderBy: { createdAt: 'desc' },
-                take: 20
-            },
-            _count: {
-                select: { playlists: true, videos: true, songLikes: true, videoLikes: true }
-            }
-        }
-    });
+    const data = await fetchFromApi(`/admin/users/${params.id}`);
 
-    if (!user) redirect('/dashboard/users');
+    if (!data.success || !data.user) redirect('/dashboard/users');
+    const user = data.user;
 
     return (
         <div className="max-w-6xl mx-auto pb-10">
