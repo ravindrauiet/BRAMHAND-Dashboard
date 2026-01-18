@@ -34,3 +34,17 @@ export async function updateVideo(id: number, formData: FormData) {
     console.warn("Update Reel Refactor Pending");
     redirect('/dashboard/reels');
 }
+
+export async function fetchReelFormData(id?: string) {
+    const [categoriesData, creatorsData, videoData] = await Promise.all([
+        fetchFromApi('/admin/categories'),
+        fetchFromApi('/admin/creators'),
+        id ? fetchFromApi(`/admin/videos/${id}`) : Promise.resolve(null)
+    ]);
+
+    return {
+        categories: categoriesData.categories || [],
+        creators: creatorsData.creators || [],
+        video: videoData?.video || null
+    };
+}

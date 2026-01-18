@@ -1,28 +1,19 @@
-import { db } from '@/lib/db';
+import { fetchPublicApi } from '@/lib/api';
 import { PublicNavbar } from '@/components/site/PublicNavbar';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Play } from 'lucide-react';
 
 export default async function BrowsePage({ searchParams }: { searchParams: { cat?: string } }) {
-    const categoryId = searchParams.cat ? parseInt(searchParams.cat) : undefined;
+    const categoryId = searchParams.cat || '';
 
-    const whereClause: any = { isActive: true };
-    if (categoryId) {
-        whereClause.categoryId = categoryId;
-    }
-
-    const [videos, categories] = await Promise.all([
-        db.video.findMany({
-            where: whereClause,
-            include: { creator: true },
-            orderBy: { createdAt: 'desc' },
-            take: 50
-        }),
-        db.videoCategory.findMany({
-            where: { isActive: true }
-        })
+    // Parallel Fetch
+    const [videosData, categoriesData] = await Promise.all([
+        fetchPublicApi(`/videos?limit=50${categoryId ? `&category_id=${categoryId}` : ''}`),
+        fetchPublicApi('/videos/categories')
     ]);
+
+    const videos = videosData.videos || [];
+    const categories = categoriesData.categories || [];
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-black">
@@ -40,11 +31,11 @@ export default async function BrowsePage({ searchParams }: { searchParams: { cat
                     >
                         All
                     </Link>
-                    {categories.map((cat) => (
+                    {categories.map((cat: any) => (
                         <Link
                             key={cat.id}
                             href={`/browse?cat=${cat.id}`}
-                            className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${categoryId === cat.id
+                            className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${parseInt(categoryId) === cat.id
                                 ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900'
                                 : 'bg-slate-200 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-800'
                                 }`}
@@ -55,16 +46,16 @@ export default async function BrowsePage({ searchParams }: { searchParams: { cat
                 </div>
 
                 <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-8">
-                    {categoryId ? categories.find(c => c.id === categoryId)?.name : 'All Videos'}
+                    {categoryId ? categories.find((c: any) => c.id === parseInt(categoryId))?.name : 'All Videos'}
                 </h1>
 
                 {/* Video Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 gap-y-10">
-                    {videos.map((video) => (
+                    {videos.map((video: any) => (
                         <div key={video.id} className="group">
                             <Link href={`/watch/${video.id}`} className="block relative aspect-video rounded-xl overflow-hidden bg-slate-800">
                                 <Image
-                                    src={video.thumbnailUrl || '/placeholder-thumb.jpg'}
+                                    src={video.thumbnailUrl || video.thumbnail_url || '/placeholder-thumb.jpg'}
                                     alt={video.title}
                                     fill
                                     className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -75,9 +66,14 @@ export default async function BrowsePage({ searchParams }: { searchParams: { cat
                             </Link>
 
                             <div className="mt-3 flex gap-3">
-                                <div className="w-9 h-9 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden flex-shrink-0">
-                                    {video.creator.profileImage && (
-                                        <Image src={video.creator.profileImage} alt="" width={36} height={36} className="object-cover w-full h-full" />
+                                <div className="w-9 h-9 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden flex-shrink-0 relative">
+                                    {(video.creator?.profileImage || video.creator_image) && (
+                                        <Image
+                                            src={video.creator?.profileImage || video.creator_image}
+                                            alt=""
+                                            fill
+                                            className="object-cover"
+                                        />
                                     )}
                                 </div>
                                 <div>
@@ -85,12 +81,12 @@ export default async function BrowsePage({ searchParams }: { searchParams: { cat
                                         <Link href={`/watch/${video.id}`}>{video.title}</Link>
                                     </h3>
                                     <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 hover:text-slate-700 dark:hover:text-slate-200">
-                                        {video.creator.fullName}
+                                        {video.creator?.fullName || video.creator_name}
                                     </p>
                                     <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                                        <span>{video.viewsCount} views</span>
+                                        <span>{video.viewsCount || 0} views</span>
                                         <span>•</span>
-                                        <span>{new Date(video.createdAt).toLocaleDateString('en-GB')}</span>
+                                        <span>{video.createdAt ? new Date(video.createdAt).toLocaleDateString() : 'Recently'}</span>
                                     </div>
                                 </div>
                             </div>
