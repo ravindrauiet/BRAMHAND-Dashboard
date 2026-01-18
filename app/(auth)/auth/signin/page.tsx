@@ -47,7 +47,7 @@ export default function SignInPage() {
                     </div>
                 </Link>
                 <h2 className="text-center text-3xl font-extrabold text-slate-900 dark:text-white">
-                    Sign in to StreamApp
+                    Sign in to Tirhuta
                 </h2>
                 <p className="mt-2 text-center text-sm text-slate-600 dark:text-slate-400">
                     Or{' '}

@@ -115,7 +115,7 @@ export function LandingView({ featuredVideos, trendingVideos, latestVideos }: La
                         </div>
                     </div>
                     <div className="text-center text-slate-400 text-sm">
-                        © 2024 StreamApp. Not really reserved.
+                        © 2024 Tirhuta. Not really reserved.
                     </div>
                 </footer>
             </div>

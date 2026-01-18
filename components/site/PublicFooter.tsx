@@ -71,7 +71,7 @@ export function PublicFooter() {
                 </div>
 
                 <div className="pt-8 border-t border-slate-100 dark:border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-400">
-                    <p>© 2024 StreamApp. All rights reserved.</p>
+                    <p>© 2024 Tirhuta. All rights reserved.</p>
                     <div className="flex gap-6">
                         <span>Made with ❤️ for Creators</span>
                     </div>
