@@ -23,3 +23,15 @@ export async function fetchFromApi(endpoint: string, options: RequestInit = {}) 
     }
     return res.json();
 }
+
+export async function fetchPublicApi(endpoint: string) {
+    const res = await fetch(`${API_URL}${endpoint}`, {
+        headers: { "Content-Type": "application/json" },
+        cache: 'no-store' // Ensure fresh data
+    });
+    if (!res.ok) {
+        console.error(`Public API Error ${res.status} for ${endpoint}`);
+        return { success: false };
+    }
+    return res.json();
+}

@@ -1,12 +1,11 @@
-import { db } from '@/lib/db';
+import { fetchPublicApi } from '@/lib/api';
 import { PublicNavbar } from '@/components/site/PublicNavbar';
 import UploadReelForm from './form';
 
 export default async function UploadReelPage() {
-    const categories = await db.videoCategory.findMany({
-        where: { isActive: true },
-        orderBy: { name: 'asc' }
-    });
+    // Need to use public categories endpoint which we just added
+    const data = await fetchPublicApi('/videos/categories');
+    const categories = data.categories || [];
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-black">

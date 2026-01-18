@@ -1,21 +1,17 @@
-import { db } from '@/lib/db';
+import { fetchPublicApi } from '@/lib/api';
 import { PublicNavbar } from '@/components/site/PublicNavbar';
 import Image from 'next/image';
 import { Play, Music, Mic2 } from 'lucide-react';
 import Link from 'next/link';
 
 export default async function MusicPage() {
-    const [featuredSongs, categories] = await Promise.all([
-        db.song.findMany({
-            where: { isActive: true },
-            include: { genre: true },
-            orderBy: { playsCount: 'desc' },
-            take: 20
-        }),
-        db.musicGenre.findMany({
-            where: { isActive: true }
-        })
+    const [songsData, genresData] = await Promise.all([
+        fetchPublicApi('/music/songs?is_featured=true&limit=20'),
+        fetchPublicApi('/music/genres')
     ]);
+
+    const featuredSongs = songsData.songs || [];
+    const categories = genresData.genres || [];
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-black">
@@ -45,7 +41,7 @@ export default async function MusicPage() {
                         Browse Genres
                     </h2>
                     <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-                        {categories.map((genre) => (
+                        {categories.map((genre: any) => (
                             <Link
                                 href="#"
                                 key={genre.id}
@@ -65,11 +61,11 @@ export default async function MusicPage() {
                 <div>
                     <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6">Popular Tracks</h2>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
-                        {featuredSongs.map((song) => (
+                        {featuredSongs.map((song: any) => (
                             <div key={song.id} className="group cursor-pointer">
                                 <div className="relative aspect-square rounded-xl overflow-hidden bg-slate-800 shadow-lg group-hover:shadow-xl transition-all mb-4">
                                     <Image
-                                        src={song.coverImageUrl || '/placeholder-music.jpg'}
+                                        src={song.coverImageUrl || song.cover_image_url || '/placeholder-music.jpg'}
                                         alt={song.title}
                                         fill
                                         className="object-cover group-hover:scale-110 transition-transform duration-500"
