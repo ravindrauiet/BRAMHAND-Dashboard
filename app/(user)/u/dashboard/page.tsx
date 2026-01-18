@@ -1,7 +1,7 @@
 import { db } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import { PublicNavbar } from '@/components/site/PublicNavbar';
 import Image from 'next/image';
 import { LogOut, History, Heart, PlaySquare, Music } from 'lucide-react';

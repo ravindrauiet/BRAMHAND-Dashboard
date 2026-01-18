@@ -2,7 +2,7 @@ import { db } from '@/lib/db';
 import { PublicNavbar } from '@/components/site/PublicNavbar';
 import { notFound } from 'next/navigation';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import { VideoInteractions } from '@/components/site/VideoInteractions';
 import Image from 'next/image';
 import { ThumbsUp, MessageSquare, Share2, MoreVertical } from 'lucide-react';
@@ -28,7 +28,7 @@ export default async function WatchPage({ params }: { params: { id: string } }) 
     // Increment global view count
     // Also record User History if logged in
     const session = await getServerSession(authOptions);
-    const userId = session?.user?.id ? parseInt((session.user as any).id) : null;
+    const userId = session?.user?.id ? parseInt(session.user.id) : null;
 
     if (userId) {
         await db.videoView.create({
