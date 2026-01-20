@@ -9,6 +9,7 @@ export async function getCreators() {
 
     return data.creators.map((c: any) => ({
         id: c.id,
+        userId: c.userId, // ← ADD THIS
         popularName: c.popularName || 'Unknown',
         bankName: c.bankName,
         accountNumber: c.accountNumber,
@@ -17,10 +18,10 @@ export async function getCreators() {
         monetizationPercentage: c.monetizationPercentage,
         isMonetizationEnabled: !!c.isMonetizationEnabled,
         user: {
-            fullName: c.fullName || 'Unknown',
-            email: c.email,
-            profileImage: c.profileImage,
-            isVerified: !!c.isVerified
+            fullName: c.user?.fullName || c.fullName || 'Unknown',
+            email: c.user?.email || c.email,
+            profileImage: c.user?.profileImage || c.profileImage,
+            isVerified: !!(c.user?.isVerified || c.isVerified)
         }
     }));
 }

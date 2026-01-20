@@ -4,9 +4,12 @@ import { redirect } from 'next/navigation';
 import { authOptions } from '@/lib/auth';
 import { PublicNavbar } from '@/components/site/PublicNavbar';
 import Image from 'next/image';
-import { LogOut, History, Heart, PlaySquare, Music } from 'lucide-react';
+import { LogOut, History, Heart, PlaySquare, Music, Film } from 'lucide-react';
 import Link from 'next/link';
 import { UserSignOutButton } from '@/components/UserSignOutButton';
+import ContentManagement from './ContentManagement';
+import { getMyContent } from './actions';
+import { fetchPublicApi } from '@/lib/api';
 
 export default async function UserDashboard() {
     const session = await getServerSession(authOptions);
@@ -24,8 +27,8 @@ export default async function UserDashboard() {
         redirect('/login');
     }
 
-    // Fetch User Data
-    const [user, combinedHistory] = await Promise.all([
+    // Fetch User Data, Content, and Categories
+    const [user, combinedHistory, videos, reels, categoriesData] = await Promise.all([
         db.user.findUnique({
             where: { id: userId },
             include: {
@@ -43,10 +46,30 @@ export default async function UserDashboard() {
             include: { video: { include: { creator: true } } },
             orderBy: { createdAt: 'desc' },
             take: 10
-        })
+        }),
+        getMyContent('VIDEO'),
+        getMyContent('REEL'),
+        fetchPublicApi('/videos/categories')
     ]);
 
     if (!user) redirect('/login');
+
+    const categories = categoriesData.categories || [];
+
+    console.log('Dashboard Page - Data loaded:', {
+        userId,
+        videosCount: videos.length,
+        reelsCount: reels.length,
+        categoriesCount: categories.length
+    });
+
+    if (videos.length > 0) {
+        console.log('Dashboard Page - First video:', {
+            id: videos[0].id,
+            title: videos[0].title,
+            type: videos[0].type
+        });
+    }
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-black">
@@ -81,6 +104,13 @@ export default async function UserDashboard() {
 
                     <div className="flex gap-4">
                         <Link
+                            href="/u/upload-video"
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl font-bold flex items-center gap-2 transition-colors"
+                        >
+                            <Film className="w-5 h-5" />
+                            Upload Video
+                        </Link>
+                        <Link
                             href="/u/upload-reel"
                             className="bg-pink-600 hover:bg-pink-700 text-white px-6 py-2 rounded-xl font-bold flex items-center gap-2 transition-colors"
                         >
@@ -89,6 +119,12 @@ export default async function UserDashboard() {
                         </Link>
                         <UserSignOutButton />
                     </div>
+                </div>
+
+                {/* Content Management Section */}
+                <div className="mb-8">
+                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">My Content</h2>
+                    <ContentManagement videos={videos} reels={reels} categories={categories} />
                 </div>
 
                 {/* Dashboard Grid */}

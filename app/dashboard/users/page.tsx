@@ -67,22 +67,24 @@ export default async function UsersPage({
                             {users.map((user: any) => (
                                 <tr key={user.id} className="group hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
                                     <td className="px-6 py-4">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden relative flex-shrink-0">
-                                                {user.profile_image || user.profileImage ? (
-                                                    <Image src={user.profile_image || user.profileImage} alt={user.full_name || user.fullName} fill className="object-cover" />
-                                                ) : (
-                                                    <Users className="w-5 h-5 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-slate-400" />
-                                                )}
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-semibold text-slate-900 dark:text-white capitalize">{user.full_name || user.fullName}</p>
-                                                <div className="flex flex-col">
-                                                    <span className="text-xs text-slate-500 dark:text-slate-400">{user.email}</span>
-                                                    {user.mobile_number && <span className="text-xs text-slate-400 dark:text-slate-500">{user.mobile_number}</span>}
+                                        <Link href={`/dashboard/users/${user.id}`} className="block">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden relative flex-shrink-0">
+                                                    {user.profile_image || user.profileImage ? (
+                                                        <Image src={user.profile_image || user.profileImage} alt={user.full_name || user.fullName} fill className="object-cover" />
+                                                    ) : (
+                                                        <Users className="w-5 h-5 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-slate-400" />
+                                                    )}
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-semibold text-slate-900 dark:text-white capitalize hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{user.full_name || user.fullName}</p>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-xs text-slate-500 dark:text-slate-400">{user.email}</span>
+                                                        {user.mobile_number && <span className="text-xs text-slate-400 dark:text-slate-500">{user.mobile_number}</span>}
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </Link>
                                     </td>
                                     <td className="px-6 py-4">
                                         <form action={toggleUserCreatorStatus.bind(null, user.id, !user.is_creator && !user.isCreator)}>

@@ -98,9 +98,9 @@ export function UserDetails({ user }: UserDetailsProps) {
                         <div className="space-y-6 animate-in fade-in duration-300">
                             {/* Stats Grid */}
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                <StatsCard icon={Film} label="Videos" value={user._count.videos} color="blue" />
-                                <StatsCard icon={Heart} label="Likes" value={user._count.songLikes + user._count.videoLikes} color="rose" />
-                                <StatsCard icon={List} label="Playlists" value={user._count.playlists} color="emerald" />
+                                <StatsCard icon={Film} label="Videos" value={user._count?.videos || 0} color="blue" />
+                                <StatsCard icon={Heart} label="Likes" value={(user._count?.songLikes || 0) + (user._count?.videoLikes || 0)} color="rose" />
+                                <StatsCard icon={List} label="Playlists" value={user._count?.playlists || 0} color="emerald" />
                             </div>
 
                             {/* Recent Activity Preview */}
@@ -109,7 +109,7 @@ export function UserDetails({ user }: UserDetailsProps) {
                                     <Clock className="w-5 h-5 text-slate-400" /> Recent Activity
                                 </h3>
                                 <div className="space-y-4">
-                                    {user.videoViews.slice(0, 3).map((view: any) => (
+                                    {(user.videoViews || []).slice(0, 3).map((view: any) => (
                                         <div key={view.id} className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                             <div className="relative w-20 h-12 bg-slate-200 dark:bg-slate-800 rounded-lg overflow-hidden flex-shrink-0">
                                                 {view.video.thumbnailUrl && <Image src={view.video.thumbnailUrl} alt="" fill className="object-cover" />}
@@ -120,7 +120,7 @@ export function UserDetails({ user }: UserDetailsProps) {
                                             </div>
                                         </div>
                                     ))}
-                                    {user.videoViews.length === 0 && <p className="text-slate-500 text-sm">No recent activity.</p>}
+                                    {(!user.videoViews || user.videoViews.length === 0) && <p className="text-slate-500 text-sm">No recent activity.</p>}
                                 </div>
                             </div>
                         </div>
@@ -171,18 +171,18 @@ export function UserDetails({ user }: UserDetailsProps) {
                                     <Clock className="w-5 h-5 text-blue-500" /> Watch History
                                 </h3>
                                 <div className="space-y-4">
-                                    {user.videoViews.map((view: any) => (
+                                    {(user.videoViews || []).map((view: any) => (
                                         <div key={view.id} className="flex gap-4 p-2 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg transition-colors">
                                             <div className="relative w-24 h-14 bg-slate-200 dark:bg-slate-800 rounded-md overflow-hidden flex-shrink-0">
-                                                {view.video.thumbnailUrl && <Image src={view.video.thumbnailUrl} alt="" fill className="object-cover" />}
+                                                {view.video?.thumbnailUrl && <Image src={view.video.thumbnailUrl} alt="" fill className="object-cover" />}
                                             </div>
                                             <div>
-                                                <p className="font-medium text-slate-900 dark:text-white line-clamp-1">{view.video.title}</p>
+                                                <p className="font-medium text-slate-900 dark:text-white line-clamp-1">{view.video?.title || 'Unknown'}</p>
                                                 <p className="text-xs text-slate-500">{new Date(view.createdAt).toLocaleDateString('en-GB')} • {new Date(view.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                                             </div>
                                         </div>
                                     ))}
-                                    {user.videoViews.length === 0 && <p className="text-slate-500 text-sm italic">No watch history found.</p>}
+                                    {(!user.videoViews || user.videoViews.length === 0) && <p className="text-slate-500 text-sm italic">No watch history found.</p>}
                                 </div>
                             </div>
 
@@ -194,7 +194,7 @@ export function UserDetails({ user }: UserDetailsProps) {
                                         <Heart className="w-5 h-5 text-rose-500" /> Liked Videos
                                     </h3>
                                     <div className="space-y-3">
-                                        {user.videoLikes.map((like: any) => (
+                                        {(user.videoLikes || []).map((like: any) => (
                                             <div key={like.id} className="flex items-center gap-3">
                                                 <div className="relative w-12 h-12 bg-slate-200 dark:bg-slate-800 rounded-lg overflow-hidden flex-shrink-0">
                                                     {like.video.thumbnailUrl && <Image src={like.video.thumbnailUrl} alt="" fill className="object-cover" />}
@@ -205,7 +205,7 @@ export function UserDetails({ user }: UserDetailsProps) {
                                                 </div>
                                             </div>
                                         ))}
-                                        {user.videoLikes.length === 0 && <p className="text-slate-500 text-sm italic">No liked videos.</p>}
+                                        {(!user.videoLikes || user.videoLikes.length === 0) && <p className="text-slate-500 text-sm italic">No liked videos.</p>}
                                     </div>
                                 </div>
 
@@ -215,7 +215,7 @@ export function UserDetails({ user }: UserDetailsProps) {
                                         <Music className="w-5 h-5 text-purple-500" /> Liked Songs
                                     </h3>
                                     <div className="space-y-3">
-                                        {user.songLikes.map((like: any) => (
+                                        {(user.songLikes || []).map((like: any) => (
                                             <div key={like.id} className="flex items-center gap-3">
                                                 <div className="relative w-12 h-12 bg-slate-200 dark:bg-slate-800 rounded-lg overflow-hidden flex-shrink-0">
                                                     {like.song.coverUrl ? (
@@ -230,7 +230,7 @@ export function UserDetails({ user }: UserDetailsProps) {
                                                 </div>
                                             </div>
                                         ))}
-                                        {user.songLikes.length === 0 && <p className="text-slate-500 text-sm italic">No liked songs.</p>}
+                                        {(!user.songLikes || user.songLikes.length === 0) && <p className="text-slate-500 text-sm italic">No liked songs.</p>}
                                     </div>
                                 </div>
                             </div>
