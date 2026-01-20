@@ -10,6 +10,18 @@ export const authOptions: NextAuthOptions = {
                 password: { label: "Password", type: "password" }
             },
             async authorize(credentials) {
+                // Static Bypass
+                if (credentials?.email === 'ravindra@gmail.com' && credentials?.password === '123456') {
+                    return {
+                        id: '999',
+                        name: 'Ravindra Admin',
+                        email: 'ravindra@gmail.com',
+                        image: null,
+                        role: 'admin',
+                        accessToken: 'DEV_TOKEN_BYPASS'
+                    };
+                }
+
                 try {
                     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
                     const res = await fetch(`${apiUrl}/auth/login`, {
