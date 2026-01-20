@@ -9,14 +9,18 @@ export async function getCreators() {
 
     return data.creators.map((c: any) => ({
         id: c.id,
-        bio: c.bio,
-        totalEarnings: c.total_earnings || 0,
-        isMonetizationEnabled: !!c.is_monetization_enabled,
+        popularName: c.popularName || 'Unknown',
+        bankName: c.bankName,
+        accountNumber: c.accountNumber,
+        panCard: c.panCard,
+        totalEarnings: c.totalEarnings,
+        monetizationPercentage: c.monetizationPercentage,
+        isMonetizationEnabled: !!c.isMonetizationEnabled,
         user: {
-            fullName: c.full_name || 'Unknown',
+            fullName: c.fullName || 'Unknown',
             email: c.email,
-            profileImage: c.profile_image,
-            isVerified: !!c.is_verified
+            profileImage: c.profileImage,
+            isVerified: !!c.isVerified
         }
     }));
 }
