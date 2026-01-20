@@ -10,13 +10,13 @@ export async function getCreators() {
     return data.creators.map((c: any) => ({
         id: c.id,
         bio: c.bio,
-        totalEarnings: c.totalEarnings,
-        isMonetizationEnabled: c.isMonetizationEnabled,
+        totalEarnings: c.total_earnings || 0,
+        isMonetizationEnabled: !!c.is_monetization_enabled,
         user: {
-            fullName: c.fullName,
+            fullName: c.full_name || 'Unknown',
             email: c.email,
-            profileImage: c.profileImage,
-            isVerified: c.isVerified
+            profileImage: c.profile_image,
+            isVerified: !!c.is_verified
         }
     }));
 }

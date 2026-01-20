@@ -13,9 +13,30 @@ export default async function ReelsPage() {
     }
 
     const videos = data.videos.map((v: any) => ({
-        ...v,
-        category: { name: v.categoryName },
-        creator: { fullName: v.creatorName }
+        id: v.id,
+        title: v.title,
+        description: v.description,
+        videoUrl: v.video_url,
+        thumbnailUrl: v.thumbnail_url,
+        viewsCount: v.views_count || 0,
+        likesCount: v.likes_count || 0,
+        sharesCount: v.shares_count || 0,
+        commentsCount: v.comments_count || 0,
+        isActive: !!v.is_active,
+        isTrending: !!v.is_trending,
+        isFeatured: !!v.is_featured,
+        type: v.type,
+        contentRating: v.content_rating || 'PG-13',
+        createdAt: v.created_at,
+        category: {
+            id: v.category_id,
+            name: v.category_name || 'Uncategorized'
+        },
+        creator: {
+            id: v.creator_id,
+            fullName: v.creator_name || 'Unknown',
+            image: v.creator_image
+        }
     }));
 
     // Derive stats from API data for Reels specifically if possible, 

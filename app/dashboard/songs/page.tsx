@@ -16,8 +16,30 @@ export default async function SongsPage() {
     }
 
     const songs = data.songs.map((s: any) => ({
-        ...s,
-        genre: { name: s.genreName }
+        id: s.id,
+        title: s.title,
+        description: s.description,
+        fileUrl: s.file_url,
+        thumbnailUrl: s.thumbnail_url,
+        duration: s.duration,
+        fileSize: s.file_size,
+        viewsCount: s.views_count || 0,
+        likesCount: s.likes_count || 0,
+        sharesCount: s.shares_count || 0,
+        downloadsCount: s.downloads_count || 0,
+        isActive: !!s.is_active,
+        isFeatured: !!s.is_featured,
+        isTrending: !!s.is_trending,
+        createdAt: s.created_at,
+        genre: {
+            id: s.genre_id,
+            name: s.genre_name || 'Unknown'
+        },
+        creator: {
+            id: s.creator_id,
+            fullName: s.creator_name || 'Unknown',
+            image: s.creator_image
+        }
     }));
 
     const activeSongs = songs.filter((s: any) => s.isActive).length;

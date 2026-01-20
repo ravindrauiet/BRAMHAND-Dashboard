@@ -5,7 +5,16 @@ import { revalidatePath } from 'next/cache';
 
 export async function getCategories() {
     const data = await fetchFromApi('/admin/categories');
-    return data.success ? data.categories : [];
+    if (!data.success) return [];
+
+    return data.categories.map((c: any) => ({
+        id: c.id,
+        name: c.name,
+        imageUrl: c.image_url,
+        type: c.type || 'VIDEO',
+        isActive: !!c.is_active,
+        videoCount: c.video_count || 0
+    }));
 }
 
 export async function deleteCategory(id: number) {
