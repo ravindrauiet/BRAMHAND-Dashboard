@@ -93,32 +93,56 @@ export function VideoEditor({ video, categories, creators }: VideoEditorProps) {
                         </div>
                     </div>
 
-                    {/* Media Links */}
+                    {/* Media Inputs with File Support */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-2">
-                                <LinkIcon className="w-4 h-4 text-pink-500" /> Video URL
+                                <LinkIcon className="w-4 h-4 text-pink-500" /> Video File
                             </label>
-                            <input
-                                name="videoUrl"
-                                value={formData.videoUrl}
-                                onChange={(e) => handleChange('videoUrl', e.target.value)}
-                                required
-                                placeholder="https://..."
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white font-mono text-sm"
-                            />
+                            {isEditing ? (
+                                <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-xl text-sm text-slate-500">
+                                    Video replacement not supported in edit mode yet.
+                                </div>
+                            ) : (
+                                <input
+                                    type="file"
+                                    name="video" // Must match backend field name
+                                    accept="video/*"
+                                    required={!isEditing}
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) {
+                                            // Create object URL for preview if needed, or just relying on existing flow
+                                            // For formData we don't need state but for preview we might
+                                        }
+                                    }}
+                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white font-mono text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                />
+                            )}
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-2">
-                                <ImageIcon className="w-4 h-4 text-amber-500" /> Thumbnail URL
+                                <ImageIcon className="w-4 h-4 text-amber-500" /> Thumbnail File
                             </label>
-                            <input
-                                name="thumbnailUrl"
-                                value={formData.thumbnailUrl}
-                                onChange={(e) => handleChange('thumbnailUrl', e.target.value)}
-                                placeholder="https://..."
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white font-mono text-sm"
-                            />
+                            {isEditing ? (
+                                <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-xl text-sm text-slate-500">
+                                    Thumbnail replacement not supported in edit mode yet.
+                                </div>
+                            ) : (
+                                <input
+                                    type="file"
+                                    name="thumbnail" // Must match backend field name
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) {
+                                            const url = URL.createObjectURL(file);
+                                            handleChange('thumbnailUrl', url); // Update preview
+                                        }
+                                    }}
+                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-white font-mono text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100"
+                                />
+                            )}
                         </div>
                     </div>
 

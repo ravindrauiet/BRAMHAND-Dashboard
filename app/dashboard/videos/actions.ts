@@ -1,73 +1,77 @@
 'use server';
 
-import { fetchFromApi } from '@/lib/api';
-import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
-export async function deleteVideo(id: number) {
-    try {
-        await fetchFromApi(`/admin/videos/${id}`, { method: 'DELETE' });
-        revalidatePath('/dashboard/videos');
-    } catch (e) {
-        console.error("Delete failed", e);
-    }
-}
-
-export async function toggleVideoStatus(id: number, isActive: boolean) {
-    try {
-        await fetchFromApi(`/admin/videos/${id}/status`, {
-            method: 'PATCH',
-            body: JSON.stringify({ isActive }),
-        });
-        revalidatePath('/dashboard/videos');
-    } catch (e) {
-        console.error("Toggle Status failed", e);
-    }
-}
-
-// NOTE: Creation/Update often involves File Uploads. 
-// For a true Single Backend, we'd need to upload stats to backend as multipart/form-data.
-// This is a more complex refactor. We will simplify for now to assume logic is handled
-// or point out this complexity.
-// For now, we will just use basic fields.
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 export async function createVideo(formData: FormData) {
-    // Ideally map FormData to JSON and send to API
-    const data: Record<string, any> = {};
-    formData.forEach((value, key) => { data[key] = value });
+    const session = await getServerSession(authOptions);
+    // @ts-ignore
+    const token = session?.accessToken;
 
-    // Checkboxes handling
-    data.isTrending = formData.get('isTrending') === 'on';
-    data.isFeatured = formData.get('isFeatured') === 'on';
-    data.isActive = formData.get('isActive') === 'on';
-
-    // In a real scenario with File Uploads, you'd send FormData directly if backend supports multer, modification needed.
-    // Assuming backend endpoint `/admin/videos` accepts JSON for metadata.
-
-    // WARNING: This part is complex without file upload logic refactoring on backend.
-    // We will assume backend handles JSON creation for now to match the pattern.
-
-    /* 
-       To support file uploads, backend needs multer.
-       Frontend needs to send multipart/form-data.
-       Next.js 'fetch' with FormData automatically sets headers.
-    */
-
-    /*
     try {
-        await fetchFromApi('/admin/videos', {
-             method: 'POST',
-             body: JSON.stringify(data) 
+        const res = await fetch(`${API_URL}/admin/videos`, {
+            method: 'POST',
+            headers: {
+                ...(token ? { Authorization: `Bearer ${token}` } : {})
+                // Content-Type omitted to allow boundary generation
+            },
+            body: formData,
         });
-    } catch(e) { ... }
-    */
 
-    console.warn("Create Video Refactor Pending: Requires File Upload Backend Support");
-    // For now, we leave this as a placeholder or incomplete until Backend supports upload.
+        if (!res.ok) {
+            const text = await res.text();
+            console.error('Create video failed:', text);
+            redirect(`/dashboard/videos?error=${encodeURIComponent(text)}`);
+        }
+
+        revalidatePath('/dashboard/videos');
+    } catch (e: any) {
+        // Next.js redirects throw errors, so we must rethrow them
+        if (e.message === 'NEXT_REDIRECT') throw e;
+        // Actually redirect() throws a special error digest, usually we shouldn't catch it or should rethrow
+        // But for other errors:
+        console.error('Create video error:', e);
+        redirect('/dashboard/videos?error=Creation_Failed');
+    }
+
     redirect('/dashboard/videos');
 }
 
 export async function updateVideo(id: number, formData: FormData) {
-    console.warn("Update Video Refactor Pending");
+    // For now, updates might still use JSON or we need to check if backend supports PUT with files
+    // Assuming update is just metadata for now, or if files are supported, we'd need a PUT/PATCH route with upload middleware
+    // Since we only modified POST / for uploads, we'll assume this is strictly for metadata or needs further backend work for file replacement
+
+    const session = await getServerSession(authOptions);
+    // @ts-ignore
+    const token = session?.accessToken;
+
+    const data: any = {};
+    formData.forEach((value, key) => data[key] = value);
+
+    try {
+        const res = await fetch(`${API_URL}/admin/videos/${id}`, {
+            method: 'PATCH', // or PUT
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { Authorization: `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify(data),
+        });
+
+        if (!res.ok) {
+            redirect('/dashboard/videos?error=Update_Failed');
+        }
+
+        revalidatePath('/dashboard/videos');
+    } catch (e: any) {
+        if (e.message === 'NEXT_REDIRECT') throw e;
+        redirect('/dashboard/videos?error=Update_Failed');
+    }
+
     redirect('/dashboard/videos');
 }
