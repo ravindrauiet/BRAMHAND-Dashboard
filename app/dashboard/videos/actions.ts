@@ -17,7 +17,6 @@ export async function createVideo(formData: FormData) {
             method: 'POST',
             headers: {
                 ...(token ? { Authorization: `Bearer ${token}` } : {})
-                // Content-Type omitted to allow boundary generation
             },
             body: formData,
         });
@@ -30,10 +29,7 @@ export async function createVideo(formData: FormData) {
 
         revalidatePath('/dashboard/videos');
     } catch (e: any) {
-        // Next.js redirects throw errors, so we must rethrow them
         if (e.message === 'NEXT_REDIRECT') throw e;
-        // Actually redirect() throws a special error digest, usually we shouldn't catch it or should rethrow
-        // But for other errors:
         console.error('Create video error:', e);
         redirect('/dashboard/videos?error=Creation_Failed');
     }
@@ -42,10 +38,6 @@ export async function createVideo(formData: FormData) {
 }
 
 export async function updateVideo(id: number, formData: FormData) {
-    // For now, updates might still use JSON or we need to check if backend supports PUT with files
-    // Assuming update is just metadata for now, or if files are supported, we'd need a PUT/PATCH route with upload middleware
-    // Since we only modified POST / for uploads, we'll assume this is strictly for metadata or needs further backend work for file replacement
-
     const session = await getServerSession(authOptions);
     // @ts-ignore
     const token = session?.accessToken;
@@ -55,7 +47,7 @@ export async function updateVideo(id: number, formData: FormData) {
 
     try {
         const res = await fetch(`${API_URL}/admin/videos/${id}`, {
-            method: 'PATCH', // or PUT
+            method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
                 ...(token ? { Authorization: `Bearer ${token}` } : {})
@@ -74,4 +66,54 @@ export async function updateVideo(id: number, formData: FormData) {
     }
 
     redirect('/dashboard/videos');
+}
+
+export async function deleteVideo(id: number) {
+    const session = await getServerSession(authOptions);
+    // @ts-ignore
+    const token = session?.accessToken;
+
+    try {
+        const res = await fetch(`${API_URL}/admin/videos/${id}`, {
+            method: 'DELETE',
+            headers: {
+                ...(token ? { Authorization: `Bearer ${token}` } : {})
+            }
+        });
+
+        if (!res.ok) {
+            console.error('Delete failed');
+            return;
+        }
+
+        revalidatePath('/dashboard/videos');
+    } catch (e) {
+        console.error('Delete error', e);
+    }
+}
+
+export async function toggleVideoStatus(id: number, isActive: boolean) {
+    const session = await getServerSession(authOptions);
+    // @ts-ignore
+    const token = session?.accessToken;
+
+    try {
+        const res = await fetch(`${API_URL}/admin/videos/${id}/status`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { Authorization: `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify({ isActive })
+        });
+
+        if (!res.ok) {
+            console.error('Status toggle failed');
+            return;
+        }
+
+        revalidatePath('/dashboard/videos');
+    } catch (e) {
+        console.error('Status toggle error', e);
+    }
 }
