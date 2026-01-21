@@ -26,9 +26,7 @@ export async function getMyContent(type?: 'VIDEO' | 'REEL') {
         let videos;
         if (type) {
             videos = await db.$queryRaw`
-                SELECT v.*, c.name as categoryName,
-                       (SELECT COUNT(*) FROM video_likes WHERE video_id = v.id) as likesCount,
-                       (SELECT COUNT(*) FROM video_shares WHERE video_id = v.id) as sharesCount
+                SELECT v.*, c.name as categoryName
                 FROM videos v
                 LEFT JOIN video_categories c ON v.category_id = c.id
                 WHERE v.creator_id = ${userId} AND v.type = ${type}
@@ -36,9 +34,7 @@ export async function getMyContent(type?: 'VIDEO' | 'REEL') {
             `;
         } else {
             videos = await db.$queryRaw`
-                SELECT v.*, c.name as categoryName,
-                       (SELECT COUNT(*) FROM video_likes WHERE video_id = v.id) as likesCount,
-                       (SELECT COUNT(*) FROM video_shares WHERE video_id = v.id) as sharesCount
+                SELECT v.*, c.name as categoryName
                 FROM videos v
                 LEFT JOIN video_categories c ON v.category_id = c.id
                 WHERE v.creator_id = ${userId}
