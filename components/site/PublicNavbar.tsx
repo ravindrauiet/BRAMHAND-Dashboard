@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { Search, LogIn, Menu, X, Bell } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
@@ -21,9 +22,15 @@ export function PublicNavbar() {
             <div className="mx-auto flex max-w-[1440px] items-center justify-between">
                 <div className="flex items-center gap-14">
                     {/* Logo */}
+                    {/* Logo */}
                     <Link href="/" className="flex items-center gap-3 group cursor-pointer">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#fbbf24] to-yellow-600 shadow-lg shadow-[#fbbf24]/20">
-                            <span className="material-symbols-outlined text-black font-bold">diamond</span>
+                        <div className="relative h-10 w-10 flex-shrink-0 rounded-xl overflow-hidden shadow-lg shadow-[#fbbf24]/20 border border-white/10">
+                            <Image
+                                src="/logo/Tirhutra.jpeg"
+                                alt="Tirhuta Logo"
+                                fill
+                                className="object-cover"
+                            />
                         </div>
                         <h2 className="text-2xl font-black tracking-[0.2em] text-white">TIRHUTA</h2>
                     </Link>

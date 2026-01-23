@@ -30,7 +30,7 @@ export function SettingsView() {
     // Mock User Data
     const [userData, setUserData] = useState({
         name: 'Admin User',
-        email: 'admin@videoapp.com',
+        email: 'admin@tirhuta.com',
         role: 'Super Admin'
     });
 
@@ -296,9 +296,9 @@ export function SettingsView() {
                             <div className="space-y-6">
                                 <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700 text-center">
                                     <div className="w-16 h-16 bg-blue-600 rounded-2xl mx-auto flex items-center justify-center mb-4 shadow-lg shadow-blue-500/25">
-                                        <span className="text-white text-2xl font-bold">V</span>
+                                        <span className="text-white text-2xl font-bold">T</span>
                                     </div>
-                                    <h3 className="text-xl font-bold text-slate-900 dark:text-white">Video Streaming Admin</h3>
+                                    <h3 className="text-xl font-bold text-slate-900 dark:text-white">Tirhuta Admin</h3>
                                     <p className="text-slate-500 dark:text-slate-400 mb-6">Version 1.0.0 (Beta)</p>
                                     <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 text-xs font-bold uppercase tracking-wider">
                                         <div className="w-2 h-2 rounded-full bg-emerald-500"></div>

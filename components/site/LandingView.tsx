@@ -49,14 +49,14 @@ export function LandingView({ featuredVideos, trendingVideos, latestVideos, reel
                         <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a14]/90 via-[#0a0a14]/30 to-transparent"></div>
                     </div>
 
-                    <div className="relative mx-auto flex h-full max-w-[1440px] flex-col justify-end px-6 pb-32 lg:px-20">
+                    <div className="relative mx-auto flex h-full max-w-[1440px] flex-col justify-end px-6 pb-28 lg:px-20">
                         <motion.div
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8 }}
                             className="max-w-4xl space-y-8"
                         >
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2">
                                 <div className="inline-flex items-center gap-3 rounded-full glassmorphism px-4 py-1.5 border-[#fbbf24]/20">
                                     <span className="material-symbols-outlined text-[#fbbf24] text-lg">verified_user</span>
                                     <span className="text-[12px] font-bold uppercase tracking-[0.2em] text-[#fbbf24]">Featured Original</span>
@@ -65,17 +65,17 @@ export function LandingView({ featuredVideos, trendingVideos, latestVideos, reel
                                 <span className="text-xs font-bold tracking-widest text-white/50">TRENDING #1</span>
                             </div>
 
-                            <h1 className="text-6xl md:text-8xl lg:text-9xl font-black leading-[1] font-serif-display italic tracking-tighter">
+                            <h1 className="text-4xl md:text-6xl lg:text-7xl font-black leading-[1] font-serif-display italic tracking-tighter">
                                 {heroVideo.title}
                             </h1>
 
                             <div className="flex items-center gap-6 text-sm font-semibold text-white/80">
-                                <span className="flex items-center gap-1 text-[#fbbf24]">
-                                    <span className="material-symbols-outlined text-sm">star</span> 9.8 Rating
-                                </span>
-                                <span>{new Date(heroVideo.createdAt).getFullYear()}</span>
+
+                                <span>{heroVideo.createdAt && !isNaN(new Date(heroVideo.createdAt).getTime()) ? new Date(heroVideo.createdAt).getFullYear() : '2024'}</span>
                                 <span className="px-2 py-0.5 border border-white/20 rounded text-[10px]">4K ULTRA HD</span>
-                                <span>{formatDuration(heroVideo.duration)}</span>
+                                {heroVideo.duration > 0 && (
+                                    <span>{formatDuration(heroVideo.duration)}</span>
+                                )}
                             </div>
 
                             <p className="text-xl font-medium text-white/70 leading-relaxed max-w-2xl">

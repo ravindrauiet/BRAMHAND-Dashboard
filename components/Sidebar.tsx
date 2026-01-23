@@ -32,7 +32,7 @@ export function Sidebar() {
         <div className="w-64 bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl border-r border-gray-200 dark:border-slate-800 text-slate-800 dark:text-white h-screen flex flex-col fixed left-0 top-0 z-50 transition-colors duration-300 shadow-xl dark:shadow-none">
             <div className="p-6 flex justify-between items-center gap-2">
                 <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-600 tracking-tight">
-                    Stream<span className="text-slate-800 dark:text-white">Admin</span>
+                    Tirhuta<span className="text-slate-800 dark:text-white">Admin</span>
                 </h1>
                 <div className="flex-shrink-0 scale-90">
                     <ThemeToggle />

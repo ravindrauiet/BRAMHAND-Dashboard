@@ -1,5 +1,6 @@
 import { Facebook, Twitter, Instagram, Youtube, Play } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export function PublicFooter() {
     return (
@@ -10,11 +11,16 @@ export function PublicFooter() {
                     {/* Brand Column */}
                     <div className="lg:col-span-4 space-y-6">
                         <Link href="/" className="flex items-center gap-2 group">
-                            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center text-white shadow-lg group-hover:shadow-blue-500/25 transition-all">
-                                <Play className="w-4 h-4 fill-current" />
+                            <div className="w-8 h-8 relative rounded-lg overflow-hidden shadow-lg group-hover:shadow-blue-500/25 transition-all">
+                                <Image
+                                    src="/logo/Tirhutra.jpeg"
+                                    alt="Tirhuta Logo"
+                                    fill
+                                    className="object-cover"
+                                />
                             </div>
                             <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600 dark:from-white dark:to-slate-300">
-                                Stream<span className="text-blue-600">App</span>
+                                Tirhuta
                             </span>
                         </Link>
                         <p className="text-slate-500 dark:text-slate-400 leading-relaxed max-w-sm">
@@ -74,6 +80,7 @@ export function PublicFooter() {
                     <p>© 2024 Tirhuta. All rights reserved.</p>
                     <div className="flex gap-6">
                         <span>Made with ❤️ for Creators</span>
+                        <div>Ravindra Nath Jha</div>
                     </div>
                 </div>
             </div>
