@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -105,10 +106,20 @@ export default function SignUpPage() {
             <div className="flex-1 flex flex-col justify-center items-center p-6 lg:p-10 bg-[#0a0a14] relative">
                 <div className="w-full max-w-lg space-y-4 relative z-10">
                     <div className="text-left">
-                        <Link href="/" className="inline-flex items-center gap-2 mb-4 group">
+                        <Link href="/" className="inline-flex items-center gap-2 mb-6 group">
                             <span className="material-symbols-outlined text-primary text-2xl transition-transform group-hover:-translate-x-1">arrow_back</span>
                             <span className="text-xs font-bold text-gray-400 group-hover:text-white transition-colors">Back to Home</span>
                         </Link>
+
+                        <div className="mb-6 w-12 h-12 relative rounded-xl overflow-hidden shadow-lg shadow-[#fbbf24]/20 border border-white/10">
+                            <Image
+                                src="/logo/Tirhutra.jpeg"
+                                alt="Tirhuta Logo"
+                                fill
+                                className="object-cover"
+                            />
+                        </div>
+
                         <h2 className="text-3xl font-serif-display font-bold text-white mb-1 ml-1">Create Account</h2>
                         <p className="text-gray-400 text-xs ml-1">Start your premium streaming experience today.</p>
                     </div>

@@ -3,6 +3,7 @@
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState } from 'react';
 
 export default function SignInPage() {
@@ -71,8 +72,13 @@ export default function SignInPage() {
                 <div className="w-full max-w-md space-y-6 relative z-10">
                     <div className="text-center space-y-2">
                         <Link href="/" className="inline-block mb-4 transform hover:scale-105 transition-transform">
-                            <div className="w-10 h-10 bg-gradient-to-br from-primary to-yellow-600 rounded-xl flex items-center justify-center shadow-lg shadow-primary/20 mx-auto">
-                                <span className="material-symbols-outlined text-black text-xl">diamond</span>
+                            <div className="w-12 h-12 relative rounded-xl overflow-hidden shadow-lg shadow-[#fbbf24]/20 mx-auto border border-white/10">
+                                <Image
+                                    src="/logo/Tirhutra.jpeg"
+                                    alt="Tirhuta Logo"
+                                    fill
+                                    className="object-cover"
+                                />
                             </div>
                         </Link>
                         <h2 className="text-3xl font-serif-display font-bold text-white tracking-tight">Welcome Back</h2>

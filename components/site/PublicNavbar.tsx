@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { Search, LogIn, Menu, X, Bell } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
@@ -17,11 +18,20 @@ export function PublicNavbar() {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    const [searchQuery, setSearchQuery] = useState('');
+    const router = useRouter();
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (searchQuery.trim()) {
+            router.push(`/browse?q=${encodeURIComponent(searchQuery)}`);
+        }
+    };
+
     return (
         <nav className={`fixed top-0 left-0 right-0 z-[100] w-full px-6 lg:px-20 py-6 transition-all duration-300 ${scrolled ? 'py-4 bg-[#0a0a14]/80 backdrop-blur-md border-b border-white/5' : 'bg-transparent'}`}>
             <div className="mx-auto flex max-w-[1440px] items-center justify-between">
                 <div className="flex items-center gap-14">
-                    {/* Logo */}
                     {/* Logo */}
                     <Link href="/" className="flex items-center gap-3 group cursor-pointer">
                         <div className="relative h-10 w-10 flex-shrink-0 rounded-xl overflow-hidden shadow-lg shadow-[#fbbf24]/20 border border-white/10">
@@ -47,14 +57,16 @@ export function PublicNavbar() {
 
                 <div className="flex items-center gap-8">
                     {/* Search */}
-                    <div className="relative hidden xl:block">
+                    <form onSubmit={handleSearch} className="relative hidden xl:block">
                         <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-white/40 text-xl">search</span>
                         <input
                             className="h-11 w-72 rounded-full border-none bg-white/5 pl-12 text-sm text-white placeholder:text-white/30 focus:ring-1 focus:ring-[#fbbf24]/50 glassmorphism outline-none"
                             placeholder="Search experiences..."
                             type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
                         />
-                    </div>
+                    </form>
 
                     <div className="flex items-center gap-6">
                         <Link href="/premium" className="hidden sm:flex items-center gap-2 rounded-full bg-[#fbbf24] px-4 py-1.5 shadow-lg shadow-[#fbbf24]/20 group cursor-pointer hover:scale-105 transition-all">

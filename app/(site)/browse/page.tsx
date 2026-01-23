@@ -3,17 +3,42 @@ import { PublicNavbar } from '@/components/site/PublicNavbar';
 import Image from 'next/image';
 import Link from 'next/link';
 
-export default async function BrowsePage({ searchParams }: { searchParams: { cat?: string } }) {
-    const categoryId = searchParams.cat || '';
+export default async function BrowsePage({ searchParams }: { searchParams: { cat?: string; q?: string } }) {
+    const category = searchParams.cat || '';
+    const query = searchParams.q || '';
+
+    let endpoint = '/videos?limit=50';
+
+    if (query) {
+        endpoint += `&search=${encodeURIComponent(query)}`;
+    } else if (category) {
+        if (category === 'movies') endpoint += '&type=movie';
+        else if (category === 'series') endpoint += '&type=series';
+        else if (category === 'reels') endpoint += '&type=reel';
+        else if (category === 'originals') endpoint += '&is_featured=1';
+        else if (!isNaN(Number(category))) endpoint += `&category_id=${category}`;
+    }
 
     // Parallel Fetch
     const [videosData, categoriesData] = await Promise.all([
-        fetchPublicApi(`/videos?limit=50${categoryId ? `&category_id=${categoryId}` : ''}`),
+        fetchPublicApi(endpoint),
         fetchPublicApi('/videos/categories')
     ]);
 
     const videos = videosData.videos || [];
     const categories = categoriesData.categories || [];
+
+    const getTitle = () => {
+        if (query) return `Search results for "${query}"`;
+        if (category === 'movies') return 'Movies';
+        if (category === 'series') return 'TV Series';
+        if (category === 'reels') return 'Reels';
+        if (category === 'originals') return 'Originals';
+        if (!isNaN(Number(category))) {
+            return categories.find((c: any) => c.id === parseInt(category))?.name || 'Category';
+        }
+        return 'All Videos';
+    };
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-black">
@@ -24,7 +49,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: { cat
                 <div className="flex items-center gap-4 overflow-x-auto pb-8 scrollbar-hide">
                     <Link
                         href="/browse"
-                        className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${!categoryId
+                        className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${!category && !query
                             ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900'
                             : 'bg-slate-200 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-800'
                             }`}
@@ -35,7 +60,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: { cat
                         <Link
                             key={cat.id}
                             href={`/browse?cat=${cat.id}`}
-                            className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${parseInt(categoryId) === cat.id
+                            className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${parseInt(category) === cat.id
                                 ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900'
                                 : 'bg-slate-200 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-800'
                                 }`}
@@ -46,7 +71,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: { cat
                 </div>
 
                 <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-8">
-                    {categoryId ? categories.find((c: any) => c.id === parseInt(categoryId))?.name : 'All Videos'}
+                    {getTitle()}
                 </h1>
 
                 {/* Video Grid */}

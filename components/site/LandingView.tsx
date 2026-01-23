@@ -17,7 +17,7 @@ export function LandingView({ featuredVideos, trendingVideos, latestVideos, reel
     // Helper to get valid image source
     const getThumbnail = (video: any) => {
         if (!video) return 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1974&auto=format&fit=crop';
-        return video.thumbnailUrl || video.thumbnail_url || video.coverImage || 'https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=2070&auto=format&fit=crop';
+        return video.thumbnailUrl || video.thumbnail_url || video.coverImage || video.cover_image || video.coverImageUrl || video.cover_image_url || video.preview || video.preview_image || 'https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=2070&auto=format&fit=crop';
     };
 
     const getCreatorImage = (video: any) => {
@@ -85,12 +85,12 @@ export function LandingView({ featuredVideos, trendingVideos, latestVideos, reel
                             <div className="flex flex-wrap gap-5 pt-4">
                                 <Link
                                     href={`/watch/${heroVideo.id}`}
-                                    className="group flex h-16 min-w-[200px] items-center justify-center gap-3 rounded-2xl bg-[#fbbf24] px-8 text-base font-black text-black transition-all hover:scale-105 active:scale-95 shadow-2xl shadow-[#fbbf24]/20"
+                                    className="group flex h-14 min-w-[200px] items-center justify-center gap-3 rounded-2xl bg-[#fbbf24] px-8 text-base font-black text-black transition-all hover:scale-105 active:scale-95 shadow-2xl shadow-[#fbbf24]/20"
                                 >
                                     <Play className="fill-black w-6 h-6" />
                                     START WATCHING
                                 </Link>
-                                <button className="flex h-16 min-w-[200px] items-center justify-center gap-3 rounded-2xl glassmorphism px-8 text-base font-bold text-white transition-all hover:bg-white/10 hover:border-white/30">
+                                <button className="flex h-14 min-w-[200px] items-center justify-center gap-3 rounded-2xl glassmorphism px-8 text-base font-bold text-white transition-all hover:bg-white/10 hover:border-white/30">
                                     <Plus className="w-6 h-6" />
                                     ADD TO LIST
                                 </button>
