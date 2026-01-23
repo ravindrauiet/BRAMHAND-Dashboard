@@ -41,7 +41,7 @@ export const authOptions: NextAuthOptions = {
                             name: data.user.full_name,
                             email: data.user.email,
                             image: data.user.profile_image,
-                            role: data.user.is_creator ? "creator" : "user",
+                            role: data.user.role === 'admin' || data.user.is_admin ? "admin" : (data.user.is_creator ? "creator" : "user"),
                             accessToken: data.token
                         };
                     }

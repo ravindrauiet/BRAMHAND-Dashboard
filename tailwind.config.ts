@@ -9,6 +9,20 @@ const config: Config = {
     ],
     theme: {
         extend: {
+            colors: {
+                "primary-indigo": "#1e1b4b",
+                "accent-gold": "#fbbf24",
+                "background-dark": "#0a0a14",
+                // New Auth UI Colors
+                "primary": "#f2b90d",
+                "background-light": "#f8f8f5",
+                "card-dark": "#181611",
+            },
+            fontFamily: {
+                "sans": ["Plus Jakarta Sans", "sans-serif"],
+                "serif-display": ["Playfair Display", "serif"],
+                "display": ["Spline Sans", "sans-serif"],
+            },
             backgroundImage: {
                 "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
                 "gradient-conic":
@@ -16,6 +30,24 @@ const config: Config = {
             },
         },
     },
-    plugins: [],
+    plugins: [
+        require("tailwindcss-animate"),
+        function ({ addUtilities }: any) {
+            addUtilities({
+                '.no-scrollbar': {
+                    '-ms-overflow-style': 'none',
+                    'scrollbar-width': 'none',
+                },
+                '.no-scrollbar::-webkit-scrollbar': {
+                    'display': 'none',
+                },
+                '.glassmorphism': {
+                    'background': 'rgba(255, 255, 255, 0.03)',
+                    'backdrop-filter': 'blur(16px)',
+                    'border': '1px solid rgba(255, 255, 255, 0.1)',
+                }
+            })
+        }
+    ],
 };
 export default config;

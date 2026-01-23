@@ -3,21 +3,72 @@
 @tailwind utilities;
 
 @layer base {
+    :root {
+        --primary-indigo: #1e1b4b;
+        --accent-gold: #fbbf24;
+        --glass-bg: rgba(255, 255, 255, 0.03);
+        --glass-border: rgba(255, 255, 255, 0.1);
+    }
+
     body {
-        @apply bg-gray-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50 antialiased transition-colors duration-300;
+        @apply bg-[#0a0a14] text-white antialiased transition-colors duration-300;
+        font-feature-settings: "ss01", "ss02", "cv01", "cv02";
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        @apply bg-transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        @apply bg-slate-800 rounded-full hover:bg-slate-700 transition-colors;
     }
 }
 
 @layer utilities {
-    .glass {
-        @apply bg-white/70 dark:bg-white/10 backdrop-blur-lg border border-white/20 dark:border-white/10;
+    .glassmorphism {
+        @apply bg-white/5 backdrop-blur-md border border-white/10;
     }
 
-    .glass-card {
-        @apply bg-white dark:bg-slate-900/50 backdrop-blur-xl border border-gray-200 dark:border-slate-800 shadow-lg dark:shadow-none;
+    .hero-gradient-top {
+        background: linear-gradient(to bottom, #0a0a14 0%, rgba(10, 10, 20, 0.9) 15%, transparent 100%);
     }
 
-    .text-gradient {
-        @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-600;
+    .hero-gradient-bottom {
+        background: linear-gradient(to top, #0a0a14 0%, rgba(10, 10, 20, 0.6) 40%, transparent 100%);
+    }
+
+    .premium-glow:hover {
+        box-shadow: 0 0 25px rgba(251, 191, 36, 0.4);
+    }
+
+    .card-glow:hover {
+        box-shadow: 0 0 30px rgba(30, 27, 75, 0.7);
+    }
+
+    .text-gradient-gold {
+        @apply bg-clip-text text-transparent bg-gradient-to-r from-[#fbbf24] via-yellow-200 to-[#fbbf24];
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    .gold-gradient {
+        background: linear-gradient(135deg, #f2b90d 0%, #d4a10a 100%);
+    }
+
+    .collage-overlay {
+        background: linear-gradient(to right, rgba(10, 10, 10, 0.2), rgba(10, 10, 10, 0.8));
     }
 }

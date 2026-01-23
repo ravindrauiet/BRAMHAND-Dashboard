@@ -1,8 +1,9 @@
 'use client';
 
-import { Play, TrendingUp, Clock, MoreVertical, Heart, Share2 } from 'lucide-react';
+import { Play, TrendingUp, Clock, MoreVertical, Heart, Share2, Flame, ChevronRight, Compass, Music, Film, Tv, Plus } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 
 interface LandingViewProps {
     featuredVideos: any[];
@@ -12,175 +13,308 @@ interface LandingViewProps {
 
 export function LandingView({ featuredVideos, trendingVideos, latestVideos }: LandingViewProps) {
     const heroVideo = featuredVideos[0];
-    const otherFeatured = featuredVideos.slice(1);
+
+    // Using movies/series specific buckets if available, otherwise falling back
+    const movies = trendingVideos; // In a real app, filtering by category would happen here
+    const series = latestVideos;   // same here
+
+    // Helper to get valid image source
+    const getThumbnail = (video: any) => {
+        if (!video) return 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1974&auto=format&fit=crop';
+        return video.thumbnailUrl || video.thumbnail_url || video.coverImage || 'https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=2070&auto=format&fit=crop';
+    };
+
+    const getCreatorImage = (video: any) => {
+        if (!video) return null;
+        return video.creator?.profileImage || video.creator_image || video.creator?.image;
+    };
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-black pt-16">
+        <div className="min-h-screen bg-[#0a0a14] font-sans selection:bg-[#fbbf24]/30">
 
             {/* Hero Section */}
-            {heroVideo && (
-                <section className="relative h-[80vh] w-full overflow-hidden">
-                    <div className="absolute inset-0">
-                        {/* Fallback to thumbnail if no video implementation yet, or just an image for now */}
+            {heroVideo ? (
+                <section className="relative h-[95vh] w-full overflow-hidden">
+                    <div className="absolute inset-0 scale-105 transition-transform duration-[20s] hover:scale-100">
                         <Image
-                            src={heroVideo.thumbnailUrl || '/placeholder-hero.jpg'}
+                            src={getThumbnail(heroVideo)}
                             alt={heroVideo.title}
                             fill
                             className="object-cover"
                             priority
+                            quality={100}
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent"></div>
+                        <div className="hero-gradient-top absolute inset-0"></div>
+                        <div className="hero-gradient-bottom absolute inset-0"></div>
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a14]/90 via-[#0a0a14]/30 to-transparent"></div>
                     </div>
 
-                    <div className="absolute bottom-0 left-0 right-0 p-8 md:p-16">
-                        <div className="max-w-4xl space-y-4 animate-in slide-in-from-bottom-10 duration-700 fade-in">
-                            <span className="inline-block px-3 py-1 bg-blue-600 text-white text-xs font-bold rounded-full uppercase tracking-wider">
-                                {heroVideo.category?.name || 'Featured'}
-                            </span>
-                            <h1 className="text-4xl md:text-6xl font-black text-white leading-tight drop-shadow-lg">
+                    <div className="relative mx-auto flex h-full max-w-[1440px] flex-col justify-end px-6 pb-32 lg:px-20">
+                        <motion.div
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.8 }}
+                            className="max-w-4xl space-y-8"
+                        >
+                            <div className="flex items-center gap-4">
+                                <div className="inline-flex items-center gap-3 rounded-full glassmorphism px-4 py-1.5 border-[#fbbf24]/20">
+                                    <span className="material-symbols-outlined text-[#fbbf24] text-lg">verified_user</span>
+                                    <span className="text-[12px] font-bold uppercase tracking-[0.2em] text-[#fbbf24]">Featured Original</span>
+                                </div>
+                                <div className="h-[1px] w-20 bg-white/20"></div>
+                                <span className="text-xs font-bold tracking-widest text-white/50">TRENDING #1</span>
+                            </div>
+
+                            <h1 className="text-6xl md:text-8xl lg:text-9xl font-black leading-[1] font-serif-display italic tracking-tighter">
                                 {heroVideo.title}
                             </h1>
-                            <p className="text-lg text-slate-200 line-clamp-2 max-w-2xl drop-shadow-md">
+
+                            <div className="flex items-center gap-6 text-sm font-semibold text-white/80">
+                                <span className="flex items-center gap-1 text-[#fbbf24]">
+                                    <span className="material-symbols-outlined text-sm">star</span> 9.8 Rating
+                                </span>
+                                <span>{new Date(heroVideo.createdAt).getFullYear()}</span>
+                                <span className="px-2 py-0.5 border border-white/20 rounded text-[10px]">4K ULTRA HD</span>
+                                <span>{formatDuration(heroVideo.duration)}</span>
+                            </div>
+
+                            <p className="text-xl font-medium text-white/70 leading-relaxed max-w-2xl">
                                 {heroVideo.description}
                             </p>
-                            <div className="flex items-center gap-4 pt-4">
+
+                            <div className="flex flex-wrap gap-5 pt-4">
                                 <Link
                                     href={`/watch/${heroVideo.id}`}
-                                    className="flex items-center gap-2 px-8 py-4 bg-white text-slate-900 rounded-full font-bold text-lg hover:scale-105 transition-transform"
+                                    className="group flex h-16 min-w-[200px] items-center justify-center gap-3 rounded-2xl bg-[#fbbf24] px-8 text-base font-black text-black transition-all hover:scale-105 active:scale-95 shadow-2xl shadow-[#fbbf24]/20"
                                 >
-                                    <Play className="w-5 h-5 fill-current" />
-                                    Watch Now
+                                    <Play className="fill-black w-6 h-6" />
+                                    START WATCHING
                                 </Link>
-                                <button className="p-4 bg-white/10 backdrop-blur-md rounded-full text-white hover:bg-white/20 transition-colors">
-                                    <Heart className="w-6 h-6" />
+                                <button className="flex h-16 min-w-[200px] items-center justify-center gap-3 rounded-2xl glassmorphism px-8 text-base font-bold text-white transition-all hover:bg-white/10 hover:border-white/30">
+                                    <Plus className="w-6 h-6" />
+                                    ADD TO LIST
                                 </button>
+                            </div>
+                        </motion.div>
+
+                        <div className="absolute bottom-10 right-20 hidden lg:flex gap-4">
+                            <div className="w-16 h-1 bg-[#fbbf24] rounded-full"></div>
+                            <div className="w-16 h-1 bg-white/20 rounded-full"></div>
+                            <div className="w-16 h-1 bg-white/20 rounded-full"></div>
+                        </div>
+                    </div>
+                </section>
+            ) : null}
+
+            <main className="mx-auto w-full max-w-[1440px] space-y-24 px-6 py-16 lg:px-20">
+
+                {/* Check Filters */}
+                <div className="relative z-20 -mt-24">
+                    <div className="no-scrollbar flex items-center gap-4 overflow-x-auto pb-6">
+                        <CategoryFilter active icon="movie" label="All Content" />
+                        <CategoryFilter icon="theaters" label="Movies" />
+                        <CategoryFilter icon="live_tv" label="Series" />
+                        <CategoryFilter icon="slow_motion_video" label="Reels" />
+                        <CategoryFilter icon="workspace_premium" label="Originals" />
+                    </div>
+                </div>
+
+                {/* Blockbuster Movies */}
+                <Section title="Blockbuster Movies" viewAllLink="/browse?cat=movies">
+                    <div className="no-scrollbar flex gap-6 overflow-x-auto pb-8">
+                        {movies.map((video) => (
+                            <div key={video.id} className="group relative min-w-[220px] md:min-w-[260px] flex-shrink-0 cursor-pointer transition-all duration-500 hover:scale-105">
+                                <Link href={`/watch/${video.id}`}>
+                                    <div className="aspect-[2/3] w-full rounded-2xl bg-cover bg-center card-glow overflow-hidden relative border border-white/5 bg-slate-800">
+                                        <Image
+                                            src={getThumbnail(video)}
+                                            alt={video.title}
+                                            fill
+                                            className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
+                                        <div className="absolute top-4 right-4 glassmorphism rounded-lg px-2 py-1 text-[10px] font-black text-[#fbbf24]">HD</div>
+                                    </div>
+                                    <div className="mt-4 px-1">
+                                        <p className="text-base font-bold text-white group-hover:text-[#fbbf24] transition-colors truncate">{video.title}</p>
+                                        <p className="text-xs font-semibold text-white/40 mt-1">{video.category?.name || 'Genre'} • {formatDuration(video.duration)}</p>
+                                    </div>
+                                </Link>
+                            </div>
+                        ))}
+                    </div>
+                </Section>
+
+                {/* Popular Series - Using wider cards */}
+                <Section title="Popular Series" viewAllLink="/browse?cat=series">
+                    <div className="no-scrollbar flex gap-8 overflow-x-auto pb-4">
+                        {series.map((video) => (
+                            <div key={video.id} className="group min-w-[380px] md:min-w-[440px] flex-shrink-0 cursor-pointer">
+                                <Link href={`/watch/${video.id}`}>
+                                    <div className="aspect-video w-full rounded-3xl bg-slate-800 border border-white/10 overflow-hidden relative shadow-xl">
+                                        <Image
+                                            src={getThumbnail(video)}
+                                            alt={video.title}
+                                            fill
+                                            className="object-cover transition-transform duration-700 group-hover:scale-105"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent p-6 flex flex-col justify-end">
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <span className="bg-[#fbbf24]/20 text-[#fbbf24] text-[10px] font-black px-3 py-1 rounded-full border border-[#fbbf24]/30 uppercase tracking-tighter">New Episodes</span>
+                                            </div>
+                                            <h3 className="text-2xl font-bold text-white group-hover:text-[#fbbf24] transition-colors">{video.title}</h3>
+                                            <p className="text-white/60 text-sm mt-1 line-clamp-1">{video.description}</p>
+                                        </div>
+                                    </div>
+                                </Link>
+                            </div>
+                        ))}
+                    </div>
+                </Section>
+
+                {/* Reels Section */}
+                <section className="py-4">
+                    <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                                <span className="material-symbols-outlined text-[#fbbf24] fill-1">bolt</span>
+                                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#fbbf24]">Trending Reels</span>
+                            </div>
+                            <h2 className="text-4xl font-serif-display font-bold text-white">Moments of Mithila</h2>
+                        </div>
+                        <div className="flex items-center gap-6">
+                            <div className="flex -space-x-3">
+                                <div className="h-10 w-10 rounded-full border-2 border-[#0a0a14] bg-slate-700"></div>
+                                <div className="h-10 w-10 rounded-full border-2 border-[#0a0a14] bg-gray-600 flex items-center justify-center text-[10px] font-bold">+5k</div>
+                            </div>
+                            <span className="text-sm font-medium text-white/40">Creators active now</span>
+                        </div>
+                    </div>
+
+                    <div className="no-scrollbar flex gap-6 overflow-x-auto pb-8 snap-x">
+                        {/* Placeholder Reels for Design Fidelity */}
+                        {[1, 2, 3, 4].map((i) => (
+                            <div key={i} className="min-w-[280px] md:min-w-[320px] aspect-[9/16] relative rounded-[2rem] overflow-hidden border border-white/5 group cursor-pointer bg-slate-800">
+                                <Image
+                                    src={`https://images.unsplash.com/photo-${1611162610 + i * 100}?q=80&w=1000&auto=format&fit=crop`}
+                                    alt="Reel"
+                                    fill
+                                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30"></div>
+                                <div className="absolute top-6 left-6 flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-white text-lg drop-shadow-lg">visibility</span>
+                                    <span className="text-xs font-bold text-white drop-shadow-md">{(1.2 + i * 0.5).toFixed(1)}M</span>
+                                </div>
+                                <div className="absolute bottom-0 inset-x-0 p-8 space-y-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-10 w-10 rounded-full border-2 border-[#fbbf24] bg-slate-500"></div>
+                                        <div>
+                                            <p className="text-sm font-black text-white">@Creator{i}</p>
+                                        </div>
+                                    </div>
+                                    <p className="text-sm text-white/90 font-medium line-clamp-2 leading-relaxed">Capturing the vibes of Mithila ✨</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+
+                {/* Originals Collection */}
+                <section className="py-12">
+                    <div className="mb-10 text-center md:text-left">
+                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#fbbf24]">Tirhuta Studios Presents</span>
+                        <h2 className="text-4xl md:text-5xl font-serif-display font-bold text-white mt-2">The Originals Collection</h2>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 h-full md:h-[600px]">
+                        <div className="md:col-span-2 group relative overflow-hidden rounded-[2.5rem] cursor-pointer border border-white/10 bg-slate-900">
+                            <Image
+                                src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=2000&auto=format&fit=crop"
+                                alt="Main Original"
+                                fill
+                                className="object-cover transition-transform duration-700 group-hover:scale-110"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a14] via-[#0a0a14]/20 to-transparent"></div>
+                            <div className="absolute bottom-0 p-10 space-y-4">
+                                <div className="flex items-center gap-2 text-[#fbbf24] font-bold text-sm">
+                                    <span className="material-symbols-outlined text-sm">verified</span>
+                                    EDITOR'S CHOICE
+                                </div>
+                                <h3 className="text-4xl md:text-5xl font-serif-display font-black text-white italic">Symphony of the Plains</h3>
+                                <p className="text-white/60 max-w-lg text-lg">Our flagship documentary series exploring the untold musical traditions of rural Mithila.</p>
+                                <button className="mt-4 px-8 py-4 bg-[#fbbf24] text-black font-black rounded-2xl hover:scale-105 transition-transform uppercase tracking-wider text-sm shadow-xl shadow-[#fbbf24]/20">
+                                    Discover Story
+                                </button>
+                            </div>
+                        </div>
+                        <div className="flex flex-col gap-8">
+                            <div className="flex-1 group relative overflow-hidden rounded-[2rem] cursor-pointer border border-white/10 bg-slate-900">
+                                <Image
+                                    src="https://images.unsplash.com/photo-1542204637-e67bc7d41e0e?q=80&w=1000"
+                                    alt="Original 2"
+                                    fill
+                                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a14]/80 to-transparent"></div>
+                                <div className="absolute bottom-0 p-6">
+                                    <h4 className="text-xl font-bold text-white">Beyond the Rift</h4>
+                                </div>
+                            </div>
+                            <div className="flex-1 group relative overflow-hidden rounded-[2rem] cursor-pointer border border-white/10 bg-slate-900">
+                                <Image
+                                    src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=1000"
+                                    alt="Original 3"
+                                    fill
+                                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a14]/80 to-transparent"></div>
+                                <div className="absolute bottom-0 p-6">
+                                    <h4 className="text-xl font-bold text-white">Midnight Sessions</h4>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </section>
-            )}
 
-            <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
-
-                {/* Trending Section */}
-                <section>
-                    <div className="flex items-center justify-between mb-8">
-                        <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                            <TrendingUp className="w-6 h-6 text-rose-500" />
-                            Trending Now
-                        </h2>
-                        <Link href="/trending" className="text-blue-600 font-medium hover:underline">View All</Link>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                        {trendingVideos.map((video) => (
-                            <VideoCard key={video.id} video={video} />
-                        ))}
-                    </div>
-                </section>
-
-                {/* Latest Videos */}
-                <section>
-                    <div className="flex items-center justify-between mb-8">
-                        <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                            <Clock className="w-6 h-6 text-blue-500" />
-                            Recently Added
-                        </h2>
-                        <Link href="/latest" className="text-blue-600 font-medium hover:underline">View All</Link>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-                        {latestVideos.map((video) => (
-                            <VideoCard key={video.id} video={video} />
-                        ))}
-                    </div>
-                </section>
-
-                {/* Footer Preview */}
-                <footer className="border-t border-slate-200 dark:border-slate-800 pt-16 pb-8">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
-                        <div>
-                            <h4 className="font-bold text-slate-900 dark:text-white mb-4">Company</h4>
-                            <ul className="space-y-2 text-slate-500 dark:text-slate-400">
-                                <li>About Us</li>
-                                <li>Careers</li>
-                                <li>Press</li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h4 className="font-bold text-slate-900 dark:text-white mb-4">Support</h4>
-                            <ul className="space-y-2 text-slate-500 dark:text-slate-400">
-                                <li>Help Center</li>
-                                <li>Terms of Service</li>
-                                <li>Privacy Policy</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div className="text-center text-slate-400 text-sm">
-                        © 2024 Tirhuta. Not really reserved.
-                    </div>
-                </footer>
-            </div>
+            </main>
         </div>
     );
 }
 
-function VideoCard({ video }: { video: any }) {
+function Section({ title, viewAllLink, children }: { title: string, viewAllLink: string, children: React.ReactNode }) {
     return (
-        <Link href={`/watch/${video.id}`} className="group block relative">
-            <div className="relative aspect-video rounded-xl overflow-hidden bg-slate-800 shadow-lg group-hover:shadow-2xl transition-all duration-300">
-                <Image
-                    src={video.thumbnailUrl || '/placeholder-thumb.jpg'}
-                    alt={video.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-slate-900 scale-0 group-hover:scale-110 transition-transform duration-300 delay-75">
-                        <Play className="w-5 h-5 fill-current ml-0.5" />
-                    </div>
+        <section>
+            <div className="mb-8 flex items-end justify-between">
+                <div className="space-y-1">
+                    <h2 className="text-3xl font-serif-display font-bold text-white tracking-wide">{title}</h2>
+                    <div className="h-1 w-12 bg-[#fbbf24] rounded-full"></div>
                 </div>
-                <div className="absolute bottom-2 right-2 px-2 py-1 bg-black/80 text-white text-xs font-medium rounded-md">
-                    {formatDuration(video.duration)}
-                </div>
+                <Link href={viewAllLink} className="group flex items-center gap-2 text-xs font-black uppercase tracking-widest text-[#fbbf24] transition-all">
+                    VIEW ALL
+                    <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                </Link>
             </div>
-
-            <div className="pt-3 flex gap-3">
-                <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-800 flex-shrink-0 overflow-hidden">
-                    {video.creator?.profileImage ? (
-                        <Image src={video.creator.profileImage} alt="" width={40} height={40} />
-                    ) : (
-                        <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs">?</div>
-                    )}
-                </div>
-                <div className="flex-1 min-w-0">
-                    <h3 className="text-black dark:text-white font-semibold text-sm line-clamp-2 leading-tight group-hover:text-blue-600 transition-colors">
-                        {video.title}
-                    </h3>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 truncate">
-                        {video.creator?.fullName || 'Unknown Creator'}
-                    </p>
-                    <div className="flex items-center gap-2 text-xs text-slate-400 mt-1">
-                        <span>{formatViews(video.viewsCount || 0)} views</span>
-                        <span>•</span>
-                        <span>{new Date(video.createdAt).toLocaleDateString('en-GB')}</span>
-                    </div>
-                </div>
-                <button className="self-start text-slate-400 hover:text-slate-900 dark:hover:text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                    <MoreVertical className="w-4 h-4" />
-                </button>
-            </div>
-        </Link>
+            {children}
+        </section>
     );
 }
 
-function formatDuration(seconds: number) {
-    if (!seconds) return '00:00';
-    const min = Math.floor(seconds / 60);
-    const sec = seconds % 60;
-    return `${min}:${sec.toString().padStart(2, '0')}`;
+function CategoryFilter({ icon, label, active }: { icon: string, label: string, active?: boolean }) {
+    return (
+        <div className={`flex h-12 shrink-0 cursor-pointer items-center justify-center gap-3 rounded-2xl px-8 text-sm font-bold transition-all ${active
+            ? 'bg-[#fbbf24] text-black premium-glow font-black'
+            : 'glassmorphism text-white/90 hover:bg-white/10 font-semibold'
+            }`}>
+            <span className="material-symbols-outlined text-lg">{icon}</span>
+            {label}
+        </div>
+    )
 }
 
-function formatViews(views: number) {
-    if (views >= 1000000) return `${(views / 1000000).toFixed(1)}M`;
-    if (views >= 1000) return `${(views / 1000).toFixed(1)}K`;
-    return views.toString();
+function formatDuration(seconds: number) {
+    if (!seconds) return '0m';
+    const min = Math.floor(seconds / 60);
+    const sec = seconds % 60;
+    return `${min}m ${sec}s`;
 }
