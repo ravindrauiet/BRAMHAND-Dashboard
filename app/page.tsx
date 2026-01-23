@@ -15,6 +15,7 @@ export default async function Home() {
                 featuredVideos={data.featuredVideos}
                 trendingVideos={data.trendingVideos}
                 latestVideos={data.latestVideos}
+                reelsVideos={data.reelsVideos}
             />
             <PublicFooter />
         </main>

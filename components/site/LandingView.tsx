@@ -9,15 +9,11 @@ interface LandingViewProps {
     featuredVideos: any[];
     trendingVideos: any[];
     latestVideos: any[];
+    reelsVideos: any[];
 }
 
-export function LandingView({ featuredVideos, trendingVideos, latestVideos }: LandingViewProps) {
+export function LandingView({ featuredVideos, trendingVideos, latestVideos, reelsVideos }: LandingViewProps) {
     const heroVideo = featuredVideos[0];
-
-    // Using movies/series specific buckets if available, otherwise falling back
-    const movies = trendingVideos; // In a real app, filtering by category would happen here
-    const series = latestVideos;   // same here
-
     // Helper to get valid image source
     const getThumbnail = (video: any) => {
         if (!video) return 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1974&auto=format&fit=crop';
@@ -28,6 +24,10 @@ export function LandingView({ featuredVideos, trendingVideos, latestVideos }: La
         if (!video) return null;
         return video.creator?.profileImage || video.creator_image || video.creator?.image;
     };
+
+    // Using movies/series specific buckets if available, otherwise falling back
+    const movies = trendingVideos; // In a real app, filtering by category would happen here
+    const series = latestVideos;   // same here
 
     return (
         <div className="min-h-screen bg-[#0a0a14] font-sans selection:bg-[#fbbf24]/30">
@@ -184,7 +184,16 @@ export function LandingView({ featuredVideos, trendingVideos, latestVideos }: La
                         </div>
                         <div className="flex items-center gap-6">
                             <div className="flex -space-x-3">
-                                <div className="h-10 w-10 rounded-full border-2 border-[#0a0a14] bg-slate-700"></div>
+                                {reelsVideos.slice(0, 3).map((video: any, idx: number) => (
+                                    <div key={idx} className="relative h-10 w-10 rounded-full border-2 border-[#0a0a14] bg-slate-700 overflow-hidden">
+                                        <Image
+                                            src={getCreatorImage(video) || 'https://via.placeholder.com/40'}
+                                            alt="Creator"
+                                            fill
+                                            className="object-cover"
+                                        />
+                                    </div>
+                                ))}
                                 <div className="h-10 w-10 rounded-full border-2 border-[#0a0a14] bg-gray-600 flex items-center justify-center text-[10px] font-bold">+5k</div>
                             </div>
                             <span className="text-sm font-medium text-white/40">Creators active now</span>
@@ -192,31 +201,43 @@ export function LandingView({ featuredVideos, trendingVideos, latestVideos }: La
                     </div>
 
                     <div className="no-scrollbar flex gap-6 overflow-x-auto pb-8 snap-x">
-                        {/* Placeholder Reels for Design Fidelity */}
-                        {[1, 2, 3, 4].map((i) => (
-                            <div key={i} className="min-w-[280px] md:min-w-[320px] aspect-[9/16] relative rounded-[2rem] overflow-hidden border border-white/5 group cursor-pointer bg-slate-800">
-                                <Image
-                                    src={`https://images.unsplash.com/photo-${1611162610 + i * 100}?q=80&w=1000&auto=format&fit=crop`}
-                                    alt="Reel"
-                                    fill
-                                    className="object-cover transition-transform duration-700 group-hover:scale-110"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30"></div>
-                                <div className="absolute top-6 left-6 flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-white text-lg drop-shadow-lg">visibility</span>
-                                    <span className="text-xs font-bold text-white drop-shadow-md">{(1.2 + i * 0.5).toFixed(1)}M</span>
-                                </div>
-                                <div className="absolute bottom-0 inset-x-0 p-8 space-y-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-10 w-10 rounded-full border-2 border-[#fbbf24] bg-slate-500"></div>
-                                        <div>
-                                            <p className="text-sm font-black text-white">@Creator{i}</p>
+                        {reelsVideos.length > 0 ? (
+                            reelsVideos.map((video: any) => (
+                                <div key={video.id} className="min-w-[280px] md:min-w-[320px] aspect-[9/16] relative rounded-[2rem] overflow-hidden border border-white/5 group cursor-pointer bg-slate-800">
+                                    <Link href={`/watch/${video.id}`}>
+                                        <Image
+                                            src={getThumbnail(video)}
+                                            alt={video.title}
+                                            fill
+                                            className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30"></div>
+                                        <div className="absolute top-6 left-6 flex items-center gap-2">
+                                            <span className="material-symbols-outlined text-white text-lg drop-shadow-lg">visibility</span>
+                                            <span className="text-xs font-bold text-white drop-shadow-md">{video.views || '0'}</span>
                                         </div>
-                                    </div>
-                                    <p className="text-sm text-white/90 font-medium line-clamp-2 leading-relaxed">Capturing the vibes of Mithila ✨</p>
+                                        <div className="absolute bottom-0 inset-x-0 p-8 space-y-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="relative h-10 w-10 rounded-full border-2 border-[#fbbf24] bg-slate-500 overflow-hidden">
+                                                    <Image
+                                                        src={getCreatorImage(video) || 'https://via.placeholder.com/40'}
+                                                        alt={video.creator?.name || 'Creator'}
+                                                        fill
+                                                        className="object-cover"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-black text-white">@{video.creator?.name || 'Creator'}</p>
+                                                </div>
+                                            </div>
+                                            <p className="text-sm text-white/90 font-medium line-clamp-2 leading-relaxed">{video.title}</p>
+                                        </div>
+                                    </Link>
                                 </div>
-                            </div>
-                        ))}
+                            ))
+                        ) : (
+                            <div className="text-white/50 pl-4">No reels found.</div>
+                        )}
                     </div>
                 </section>
 
