@@ -29,7 +29,7 @@ export function PublicNavbar() {
     };
 
     return (
-        <nav className={`fixed top-0 left-0 right-0 z-[100] w-full px-6 lg:px-20 py-6 transition-all duration-300 ${scrolled ? 'py-4 bg-[#0a0a14]/80 backdrop-blur-md border-b border-white/5' : 'bg-transparent'}`}>
+        <nav className={`fixed top-0 left-0 right-0 z-[100] w-full px-6 lg:px-20 py-4 transition-all duration-300 ${scrolled ? 'bg-white/80 dark:bg-[#0a0a14]/80 shadow-sm' : 'bg-white/50 dark:bg-transparent'} backdrop-blur-md border-b border-gray-200/50 dark:border-white/5`}>
             <div className="mx-auto flex max-w-[1440px] items-center justify-between">
                 <div className="flex items-center gap-14">
                     {/* Logo */}
@@ -42,16 +42,16 @@ export function PublicNavbar() {
                                 className="object-cover"
                             />
                         </div>
-                        <h2 className="text-2xl font-black tracking-[0.2em] text-white">TIRHUTA</h2>
+                        <h2 className="text-2xl font-black tracking-[0.2em] text-slate-900 dark:text-white">TIRHUTA</h2>
                     </Link>
 
                     {/* Desktop Navigation */}
                     <div className="hidden md:flex items-center gap-10">
                         <Link href="/" className="text-sm font-bold text-[#fbbf24]">Home</Link>
-                        <Link href="/browse?cat=movies" className="text-sm font-semibold text-white/70 transition-colors hover:text-white">Movies</Link>
-                        <Link href="/browse?cat=series" className="text-sm font-semibold text-white/70 transition-colors hover:text-white">Series</Link>
-                        <Link href="/browse?cat=reels" className="text-sm font-semibold text-white/70 transition-colors hover:text-white">Reels</Link>
-                        <Link href="/browse?cat=originals" className="text-sm font-semibold text-white/70 transition-colors hover:text-white">Originals</Link>
+                        <Link href="/browse?cat=movies" className="text-sm font-semibold text-slate-600 dark:text-white/70 transition-colors hover:text-slate-900 dark:hover:text-white">Movies</Link>
+                        <Link href="/browse?cat=series" className="text-sm font-semibold text-slate-600 dark:text-white/70 transition-colors hover:text-slate-900 dark:hover:text-white">Series</Link>
+                        <Link href="/browse?cat=reels" className="text-sm font-semibold text-slate-600 dark:text-white/70 transition-colors hover:text-slate-900 dark:hover:text-white">Reels</Link>
+                        <Link href="/browse?cat=originals" className="text-sm font-semibold text-slate-600 dark:text-white/70 transition-colors hover:text-slate-900 dark:hover:text-white">Originals</Link>
                     </div>
                 </div>
 
@@ -60,7 +60,7 @@ export function PublicNavbar() {
                     <form onSubmit={handleSearch} className="relative hidden xl:block">
                         <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-white/40 text-xl">search</span>
                         <input
-                            className="h-11 w-72 rounded-full border-none bg-white/5 pl-12 text-sm text-white placeholder:text-white/30 focus:ring-1 focus:ring-[#fbbf24]/50 glassmorphism outline-none"
+                            className="h-11 w-72 rounded-full border-none bg-slate-100 dark:bg-white/5 pl-12 text-sm text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-white/30 focus:ring-1 focus:ring-[#fbbf24]/50 glassmorphism outline-none transition-colors"
                             placeholder="Search experiences..."
                             type="text"
                             value={searchQuery}

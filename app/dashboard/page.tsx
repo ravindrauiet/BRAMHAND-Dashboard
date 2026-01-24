@@ -39,8 +39,8 @@ export default async function DashboardPage() {
         <div className="space-y-8">
             <div className="flex justify-between items-end">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-800 dark:text-white transition-colors duration-300">Dashboard Overview</h1>
-                    <p className="text-slate-500 dark:text-slate-400 mt-1">Welcome back, Admin</p>
+                    <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight transition-colors duration-300">Dashboard Overview</h1>
+                    <p className="text-slate-500 dark:text-slate-400 mt-2 text-lg">Welcome back, Admin</p>
                 </div>
                 <Link href="/dashboard/notifications" className="inline-flex items-center space-x-2 bg-slate-900 dark:bg-slate-800 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity text-sm">
                     <Bell className="w-4 h-4" />
@@ -59,8 +59,8 @@ export default async function DashboardPage() {
                             </div>
                             <div className="relative z-10 flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">{stat.name}</p>
-                                    <p className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-700 to-slate-900 dark:from-white dark:to-slate-400 mt-1">
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-1">{stat.name}</p>
+                                    <p className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">
                                         {stat.value.toLocaleString()}
                                     </p>
                                 </div>
@@ -84,7 +84,7 @@ export default async function DashboardPage() {
                             <div className="p-2 bg-emerald-100 dark:bg-emerald-500/10 rounded-lg text-emerald-600 dark:text-emerald-400">
                                 <TrendingUp className="w-5 h-5" />
                             </div>
-                            <h2 className="text-lg font-bold text-slate-800 dark:text-white">Recent Registrations</h2>
+                            <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Recent Registrations</h2>
                         </div>
                         <Link href="/dashboard/users" className="text-sm text-blue-500 hover:text-blue-600 dark:text-blue-400 flex items-center gap-1">
                             View All <ArrowRight className="w-4 h-4" />
@@ -94,10 +94,10 @@ export default async function DashboardPage() {
                         <table className="w-full">
                             <thead>
                                 <tr className="text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-gray-100 dark:border-slate-800">
-                                    <th className="pb-3 pl-2">User</th>
-                                    <th className="pb-3">Role</th>
-                                    <th className="pb-3">Joined</th>
-                                    <th className="pb-3 text-right">Status</th>
+                                    <th className="pb-4 pl-2 font-bold text-slate-900 dark:text-white">User</th>
+                                    <th className="pb-4 font-bold text-slate-900 dark:text-white">Role</th>
+                                    <th className="pb-4 font-bold text-slate-900 dark:text-white">Joined</th>
+                                    <th className="pb-4 text-right font-bold text-slate-900 dark:text-white">Status</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
@@ -143,7 +143,7 @@ export default async function DashboardPage() {
                             <div className="p-2 bg-indigo-100 dark:bg-indigo-500/10 rounded-lg text-indigo-600 dark:text-indigo-400">
                                 <Wallet className="w-5 h-5" />
                             </div>
-                            <h2 className="text-lg font-bold text-slate-800 dark:text-white">Creator Earnings</h2>
+                            <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Creator Earnings</h2>
                         </div>
                         <div className="mt-2">
                             <p className="text-sm text-slate-500 dark:text-slate-400">Total Payouts Generated</p>

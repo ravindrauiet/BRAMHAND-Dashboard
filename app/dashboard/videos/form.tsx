@@ -27,12 +27,17 @@ export default async function VideoFormPage({ params }: { params: { id?: string 
         profileImage: c.user.profileImage
     }));
 
+    // Fetch Series
+    const seriesData = await fetchFromApi('/series?is_active=true');
+    const series = seriesData.series || [];
+
     return (
         <div className="max-w-4xl mx-auto pb-10">
             <VideoEditor
                 video={video}
                 categories={categories}
                 creators={flattenedCreators}
+                seriesList={series}
             />
             {isEditing && video && <CommentsManager videoId={video.id} />}
         </div>

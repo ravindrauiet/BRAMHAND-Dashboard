@@ -52,7 +52,21 @@ export default async function UserDashboard() {
         fetchPublicApi('/videos/categories')
     ]);
 
-    if (!user) redirect('/login');
+    if (!user) {
+        return (
+            <div className="min-h-screen bg-slate-50 dark:bg-black flex items-center justify-center">
+                <div className="text-center space-y-4">
+                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white">User Record Not Found</h1>
+                    <p className="text-slate-500 dark:text-slate-400">
+                        There seems to be an issue with your account data. Please sign out and try again.
+                    </p>
+                    <div className="flex justify-center">
+                        <UserSignOutButton />
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     const categories = categoriesData.categories || [];
 

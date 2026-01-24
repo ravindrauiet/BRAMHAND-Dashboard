@@ -35,7 +35,7 @@ export function LandingView({ featuredVideos, trendingVideos, latestVideos, reel
             {/* Hero Section */}
             {heroVideo ? (
                 <section className="relative h-[95vh] w-full overflow-hidden">
-                    <div className="absolute inset-0 scale-105 transition-transform duration-[20s] hover:scale-100">
+                    <div className="absolute inset-0 scale-105 transition-transform duration-[20000ms] hover:scale-100">
                         <Image
                             src={getThumbnail(heroVideo)}
                             alt={heroVideo.title}
@@ -187,7 +187,7 @@ export function LandingView({ featuredVideos, trendingVideos, latestVideos, reel
                                 {reelsVideos.slice(0, 3).map((video: any, idx: number) => (
                                     <div key={idx} className="relative h-10 w-10 rounded-full border-2 border-[#0a0a14] bg-slate-700 overflow-hidden">
                                         <Image
-                                            src={getCreatorImage(video) || 'https://via.placeholder.com/40'}
+                                            src={getCreatorImage(video) || 'https://ui-avatars.com/api/?name=Creator&background=random'}
                                             alt="Creator"
                                             fill
                                             className="object-cover"
@@ -220,7 +220,7 @@ export function LandingView({ featuredVideos, trendingVideos, latestVideos, reel
                                             <div className="flex items-center gap-3">
                                                 <div className="relative h-10 w-10 rounded-full border-2 border-[#fbbf24] bg-slate-500 overflow-hidden">
                                                     <Image
-                                                        src={getCreatorImage(video) || 'https://via.placeholder.com/40'}
+                                                        src={getCreatorImage(video) || 'https://ui-avatars.com/api/?name=Creator&background=random'}
                                                         alt={video.creator?.name || 'Creator'}
                                                         fill
                                                         className="object-cover"
@@ -272,7 +272,7 @@ export function LandingView({ featuredVideos, trendingVideos, latestVideos, reel
                         <div className="flex flex-col gap-8">
                             <div className="flex-1 group relative overflow-hidden rounded-[2rem] cursor-pointer border border-white/10 bg-slate-900">
                                 <Image
-                                    src="https://images.unsplash.com/photo-1542204637-e67bc7d41e0e?q=80&w=1000"
+                                    src="https://images.unsplash.com/photo-1478720568477-152d9b164e63?q=80&w=1000"
                                     alt="Original 2"
                                     fill
                                     className="object-cover transition-transform duration-700 group-hover:scale-110"

@@ -31,12 +31,17 @@ export default async function WatchPage({ params }: { params: { id: string } }) 
     const userId = session?.user?.id ? parseInt(session.user.id) : null;
 
     if (userId) {
-        await db.videoView.create({
-            data: {
-                userId: userId,
-                videoId: videoId
-            }
-        });
+        try {
+            await db.videoView.create({
+                data: {
+                    userId: userId,
+                    videoId: videoId
+                }
+            });
+        } catch (error) {
+            console.error("Failed to record video view for user:", userId, error);
+            // Continue execution - do not block the page load
+        }
     }
 
     await db.video.update({

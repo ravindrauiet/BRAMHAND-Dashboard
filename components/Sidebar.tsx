@@ -2,13 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Video, Music, Users, Settings, LogOut, Wallet, Tags, List, Bell, Film } from 'lucide-react';
+import { LayoutDashboard, Video, Music, Users, Settings, LogOut, Wallet, Tags, List, Bell, Film, Layers } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import clsx from 'clsx';
 
 const navItems = [
     { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Videos', href: '/dashboard/videos', icon: Video },
+    { name: 'Series', href: '/dashboard/series', icon: Layers },
     { name: 'Reels', href: '/dashboard/reels', icon: Film },
     { name: 'Songs', href: '/dashboard/songs', icon: Music },
     { name: 'Users', href: '/dashboard/users', icon: Users },
