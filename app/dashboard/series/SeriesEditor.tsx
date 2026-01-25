@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Play, Loader2, Save, ArrowLeft, Image as ImageIcon, Link as LinkIcon, Type, FileText, X, Upload } from 'lucide-react';
+import { Play, Loader2, Save, ArrowLeft, Image as ImageIcon, Link as LinkIcon, Type, FileText, X, Upload, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -202,9 +202,44 @@ export function SeriesEditor({ series, categories, creators }: SeriesEditorProps
                         <h1 className="text-3xl font-bold text-slate-800 dark:text-white">{isEditing ? 'Edit Series' : 'New Series'}</h1>
                         <p className="text-slate-500 dark:text-slate-400 mt-1">Create a collection for your episodes.</p>
                     </div>
-                    <Link href="/dashboard/series" className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-500">
-                        <ArrowLeft className="w-5 h-5" />
-                    </Link>
+                    <div className="flex items-center gap-2">
+                        {isEditing && (
+                            <button
+                                type="button"
+                                onClick={async () => {
+                                    if (!confirm('Are you sure you want to delete this series? This action cannot be undone.')) return;
+                                    try {
+                                        setIsLoading(true);
+                                        // @ts-ignore
+                                        const token = session?.accessToken;
+                                        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/series/${series.id}`, {
+                                            method: 'DELETE',
+                                            headers: {
+                                                'Authorization': `Bearer ${token}`
+                                            }
+                                        });
+                                        if (res.ok) {
+                                            router.push('/dashboard/series');
+                                            router.refresh();
+                                        } else {
+                                            throw new Error('Failed to delete series');
+                                        }
+                                    } catch (err: any) {
+                                        setError(err.message);
+                                        setIsLoading(false);
+                                    }
+                                }}
+                                disabled={isLoading}
+                                className="p-2 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg transition-colors text-red-500 hover:text-red-600"
+                                title="Delete Series"
+                            >
+                                <Trash2 className="w-5 h-5" />
+                            </button>
+                        )}
+                        <Link href="/dashboard/series" className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-500">
+                            <ArrowLeft className="w-5 h-5" />
+                        </Link>
+                    </div>
                 </div>
 
                 {error && (
@@ -273,7 +308,7 @@ export function SeriesEditor({ series, categories, creators }: SeriesEditorProps
                             >
                                 <option value="">Select Creator</option>
                                 {creators.map(c => (
-                                    <option key={c.id} value={c.id}>{c.fullName}</option>
+                                    <option key={c.id} value={c.userId}>{c.user?.fullName || c.popularName || 'Unknown'}</option>
                                 ))}
                             </select>
                         </div>
@@ -366,6 +401,6 @@ export function SeriesEditor({ series, categories, creators }: SeriesEditorProps
                     </div>
                 </div>
             </div>
-        </form>
+        </form >
     );
 }

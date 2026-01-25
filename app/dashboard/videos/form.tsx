@@ -12,7 +12,21 @@ export default async function VideoFormPage({ params }: { params: { id?: string 
     if (isEditing) {
         const data = await fetchFromApi(`/admin/videos/${params.id}`);
         if (!data.success) redirect('/dashboard/videos');
-        video = data.video;
+        const v = data.video;
+
+        // Map snake_case from DB to camelCase for VideoEditor
+        video = {
+            ...v,
+            categoryId: v.category_id,
+            creatorId: v.creator_id,
+            seriesId: v.series_id,
+            episodeNumber: v.episode_number,
+            seasonNumber: v.season_number,
+            // Ensure booleans are actually booleans/numbers as expected
+            isFeatured: !!v.is_featured,
+            isTrending: !!v.is_trending,
+            isActive: !!v.is_active,
+        };
     }
 
     const categories = await getCategories();

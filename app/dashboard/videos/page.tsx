@@ -16,26 +16,26 @@ export default async function VideosPage() {
         id: v.id,
         title: v.title,
         description: v.description,
-        videoUrl: v.video_url,
-        thumbnailUrl: v.thumbnail_url,
-        viewsCount: v.views_count || 0,
-        likesCount: v.likes_count || 0,
-        sharesCount: v.shares_count || 0,
-        commentsCount: v.comments_count || 0,
-        isActive: !!v.is_active,
-        isTrending: !!v.is_trending,
-        isFeatured: !!v.is_featured,
+        videoUrl: v.videoUrl,
+        thumbnailUrl: v.thumbnailUrl,
+        viewsCount: v.viewsCount || 0,
+        likesCount: v.likesCount || 0,
+        sharesCount: v.sharesCount || 0,
+        commentsCount: v.commentsCount || 0,
+        isActive: !!v.isActive,
+        isTrending: !!v.isTrending,
+        isFeatured: !!v.isFeatured,
         type: v.type,
-        contentRating: v.content_rating || 'PG-13', // Default
-        createdAt: v.created_at,
+        contentRating: v.contentRating || 'PG-13', // Default
+        createdAt: v.createdAt,
         category: {
-            id: v.category_id,
-            name: v.category_name || 'Uncategorized'
+            id: v.categoryId,
+            name: v.categoryName || 'Uncategorized'
         },
         creator: {
-            id: v.creator_id,
-            fullName: v.creator_name || 'Unknown',
-            image: v.creator_image
+            id: v.creatorId,
+            fullName: v.creatorName || 'Unknown',
+            image: v.creatorImage
         }
     }));
 

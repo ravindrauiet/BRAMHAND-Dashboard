@@ -13,12 +13,12 @@ export default async function BrowsePage({ searchParams }: { searchParams: { cat
     if (query) {
         endpoint += `&search=${encodeURIComponent(query)}`;
     } else if (category) {
-        if (category === 'movies') endpoint += '&type=movie';
+        if (category === 'movies') endpoint += '&type=VIDEO&exclude_series=true';
         else if (category === 'series') {
             endpoint = '/series'; // Use specific series endpoint
             isSeries = true;
         }
-        else if (category === 'reels') endpoint += '&type=reel';
+        else if (category === 'reels') endpoint += '&type=REEL';
         else if (category === 'originals') endpoint += '&is_featured=1';
         else if (!isNaN(Number(category))) endpoint += `&category_id=${category}`;
     }

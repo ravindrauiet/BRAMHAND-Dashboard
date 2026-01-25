@@ -9,10 +9,11 @@ interface LandingViewProps {
     featuredVideos: any[];
     trendingVideos: any[];
     latestVideos: any[];
+    seriesList: any[];
     reelsVideos: any[];
 }
 
-export function LandingView({ featuredVideos, trendingVideos, latestVideos, reelsVideos }: LandingViewProps) {
+export function LandingView({ featuredVideos, trendingVideos, latestVideos, seriesList, reelsVideos }: LandingViewProps) {
     const heroVideo = featuredVideos[0];
     // Helper to get valid image source
     const getThumbnail = (video: any) => {
@@ -25,9 +26,9 @@ export function LandingView({ featuredVideos, trendingVideos, latestVideos, reel
         return video.creator?.profileImage || video.creator_image || video.creator?.image;
     };
 
-    // Using movies/series specific buckets if available, otherwise falling back
-    const movies = trendingVideos; // In a real app, filtering by category would happen here
-    const series = latestVideos;   // same here
+    // Correct mapping from props
+    const movies = latestVideos; // "Latest" are now filtered strictly as movies in actions.ts
+    const series = seriesList;
 
     return (
         <div className="min-h-screen bg-[#0a0a14] font-sans selection:bg-[#fbbf24]/30">
@@ -242,61 +243,72 @@ export function LandingView({ featuredVideos, trendingVideos, latestVideos, reel
                 </section>
 
                 {/* Originals Collection */}
-                <section className="py-12">
-                    <div className="mb-10 text-center md:text-left">
-                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#fbbf24]">Tirhuta Studios Presents</span>
-                        <h2 className="text-4xl md:text-5xl font-serif-display font-bold text-white mt-2">The Originals Collection</h2>
-                    </div>
+                {featuredVideos.length > 1 && (
+                    <section className="py-12">
+                        <div className="mb-10 text-center md:text-left">
+                            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#fbbf24]">Tirhuta Studios Presents</span>
+                            <h2 className="text-4xl md:text-5xl font-serif-display font-bold text-white mt-2">The Originals Collection</h2>
+                        </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 h-full md:h-[600px]">
-                        <div className="md:col-span-2 group relative overflow-hidden rounded-[2.5rem] cursor-pointer border border-white/10 bg-slate-900">
-                            <Image
-                                src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=2000&auto=format&fit=crop"
-                                alt="Main Original"
-                                fill
-                                className="object-cover transition-transform duration-700 group-hover:scale-110"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a14] via-[#0a0a14]/20 to-transparent"></div>
-                            <div className="absolute bottom-0 p-10 space-y-4">
-                                <div className="flex items-center gap-2 text-[#fbbf24] font-bold text-sm">
-                                    <span className="material-symbols-outlined text-sm">verified</span>
-                                    EDITOR'S CHOICE
-                                </div>
-                                <h3 className="text-4xl md:text-5xl font-serif-display font-black text-white italic">Symphony of the Plains</h3>
-                                <p className="text-white/60 max-w-lg text-lg">Our flagship documentary series exploring the untold musical traditions of rural Mithila.</p>
-                                <button className="mt-4 px-8 py-4 bg-[#fbbf24] text-black font-black rounded-2xl hover:scale-105 transition-transform uppercase tracking-wider text-sm shadow-xl shadow-[#fbbf24]/20">
-                                    Discover Story
-                                </button>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 h-full md:h-[600px]">
+                            {/* Main Featured Original (2nd Item) */}
+                            {featuredVideos[1] && (
+                                <Link href={`/watch/${featuredVideos[1].id}`} className="md:col-span-2 group relative overflow-hidden rounded-[2.5rem] cursor-pointer border border-white/10 bg-slate-900 block">
+                                    <Image
+                                        src={getThumbnail(featuredVideos[1])}
+                                        alt={featuredVideos[1].title}
+                                        fill
+                                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a14] via-[#0a0a14]/20 to-transparent"></div>
+                                    <div className="absolute bottom-0 p-10 space-y-4">
+                                        <div className="flex items-center gap-2 text-[#fbbf24] font-bold text-sm">
+                                            <span className="material-symbols-outlined text-sm">verified</span>
+                                            EDITOR'S CHOICE
+                                        </div>
+                                        <h3 className="text-4xl md:text-5xl font-serif-display font-black text-white italic">{featuredVideos[1].title}</h3>
+                                        <p className="text-white/60 max-w-lg text-lg line-clamp-2">{featuredVideos[1].description}</p>
+                                        <button className="mt-4 px-8 py-4 bg-[#fbbf24] text-black font-black rounded-2xl hover:scale-105 transition-transform uppercase tracking-wider text-sm shadow-xl shadow-[#fbbf24]/20">
+                                            WATCH NOW
+                                        </button>
+                                    </div>
+                                </Link>
+                            )}
+
+                            {/* Side Originals (3rd & 4th Items) */}
+                            <div className="flex flex-col gap-8">
+                                {featuredVideos[2] && (
+                                    <Link href={`/watch/${featuredVideos[2].id}`} className="flex-1 group relative overflow-hidden rounded-[2rem] cursor-pointer border border-white/10 bg-slate-900 block">
+                                        <Image
+                                            src={getThumbnail(featuredVideos[2])}
+                                            alt={featuredVideos[2].title}
+                                            fill
+                                            className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a14]/80 to-transparent"></div>
+                                        <div className="absolute bottom-0 p-6">
+                                            <h4 className="text-xl font-bold text-white line-clamp-1">{featuredVideos[2].title}</h4>
+                                        </div>
+                                    </Link>
+                                )}
+                                {featuredVideos[3] && (
+                                    <Link href={`/watch/${featuredVideos[3].id}`} className="flex-1 group relative overflow-hidden rounded-[2rem] cursor-pointer border border-white/10 bg-slate-900 block">
+                                        <Image
+                                            src={getThumbnail(featuredVideos[3])}
+                                            alt={featuredVideos[3].title}
+                                            fill
+                                            className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a14]/80 to-transparent"></div>
+                                        <div className="absolute bottom-0 p-6">
+                                            <h4 className="text-xl font-bold text-white line-clamp-1">{featuredVideos[3].title}</h4>
+                                        </div>
+                                    </Link>
+                                )}
                             </div>
                         </div>
-                        <div className="flex flex-col gap-8">
-                            <div className="flex-1 group relative overflow-hidden rounded-[2rem] cursor-pointer border border-white/10 bg-slate-900">
-                                <Image
-                                    src="https://images.unsplash.com/photo-1478720568477-152d9b164e63?q=80&w=1000"
-                                    alt="Original 2"
-                                    fill
-                                    className="object-cover transition-transform duration-700 group-hover:scale-110"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a14]/80 to-transparent"></div>
-                                <div className="absolute bottom-0 p-6">
-                                    <h4 className="text-xl font-bold text-white">Beyond the Rift</h4>
-                                </div>
-                            </div>
-                            <div className="flex-1 group relative overflow-hidden rounded-[2rem] cursor-pointer border border-white/10 bg-slate-900">
-                                <Image
-                                    src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=1000"
-                                    alt="Original 3"
-                                    fill
-                                    className="object-cover transition-transform duration-700 group-hover:scale-110"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a14]/80 to-transparent"></div>
-                                <div className="absolute bottom-0 p-6">
-                                    <h4 className="text-xl font-bold text-white">Midnight Sessions</h4>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
+                    </section>
+                )}
 
             </main>
         </div>
