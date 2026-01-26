@@ -7,10 +7,13 @@ export default async function ReelsPage() {
     // 1. Fetch from API (type=REEL)
     const data = await fetchFromApi('/admin/videos?type=REEL');
     const statsData = await fetchFromApi('/admin/stats');
+    const categoriesData = await fetchFromApi('/videos/categories');
 
     if (!data.success || !statsData.success) {
         return <div>Error loading reels</div>;
     }
+
+    const categories = categoriesData.categories || [];
 
     const videos = data.videos.map((v: any) => ({
         id: v.id,
@@ -38,12 +41,6 @@ export default async function ReelsPage() {
             image: v.creator_image
         }
     }));
-
-    // Derive stats from API data for Reels specifically if possible, 
-    // or fallback to generic stats if backend doesn't split yet.
-    // For improved accuracy, backend /stats should split videos vs reels.
-    // For now, we will filter client side or just use the count from the list if pagination wasn't strict.
-    // Note: getAllVideos is paginated? If not, we have all length.
 
     const totalVideos = videos.length;
     const totalViews = videos.reduce((acc: number, curr: any) => acc + (curr.viewsCount || 0), 0);
@@ -109,7 +106,7 @@ export default async function ReelsPage() {
                 </div>
             </div>
 
-            <VideoList videos={videos} categories={[]} />
+            <VideoList videos={videos} categories={categories} />
         </div>
     );
 }

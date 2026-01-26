@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Search, LogIn, Menu, X, Bell } from 'lucide-react';
+import { Search, LogIn, Menu, X, Bell, Crown } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 
@@ -57,25 +57,27 @@ export function PublicNavbar() {
 
                 <div className="flex items-center gap-8">
                     {/* Search */}
-                    <form onSubmit={handleSearch} className="relative hidden xl:block">
-                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-white/40 text-xl">search</span>
+                    <form onSubmit={handleSearch} className="relative hidden md:block group">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/40 w-5 h-5 group-hover:text-[#fbbf24] transition-colors" />
                         <input
-                            className="h-11 w-72 rounded-full border-none bg-slate-100 dark:bg-white/5 pl-12 text-sm text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-white/30 focus:ring-1 focus:ring-[#fbbf24]/50 glassmorphism outline-none transition-colors"
-                            placeholder="Search experiences..."
+                            className="h-11 w-64 lg:w-72 rounded-full border-none bg-slate-100 dark:bg-white/5 pl-12 text-sm text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-white/30 focus:ring-1 focus:ring-[#fbbf24]/50 glassmorphism outline-none transition-all"
+                            placeholder="Search content..."
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </form>
 
-                    <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-4 lg:gap-6">
                         <Link href="/premium" className="hidden sm:flex items-center gap-2 rounded-full bg-[#fbbf24] px-4 py-1.5 shadow-lg shadow-[#fbbf24]/20 group cursor-pointer hover:scale-105 transition-all">
-                            <span className="material-symbols-outlined text-black text-sm font-bold">workspace_premium</span>
+                            <span className="text-black font-bold">
+                                <Crown className="w-4 h-4 fill-current" />
+                            </span>
                             <span className="text-[11px] font-black uppercase tracking-wider text-black">Premium</span>
                         </Link>
 
                         <button className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-white/10 transition-colors">
-                            <span className="material-symbols-outlined text-white/70">notifications</span>
+                            <Bell className="w-5 h-5 text-slate-700 dark:text-white/70" />
                         </button>
 
                         {/* Profile / Auth */}

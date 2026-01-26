@@ -18,10 +18,10 @@ enum ContentRating {
   UA
   A
   S
-  UA_13_PLUS @map("U/A 13+")
-  UA_16_PLUS @map("U/A 16+")
+  UA_13  @map("U/A 13+")
+  UA_16  @map("U/A 16+")
   PG
-  PG_13 @map("PG-13")
+  PG_13  @map("PG-13")
 }
 
 // Users Table
@@ -32,6 +32,7 @@ model User {
   passwordHash    String?   @map("password_hash") @db.VarChar(255)
   fullName        String    @map("full_name")
   profileImage    String?   @map("profile_image") @db.VarChar(512)
+  fcmToken        String?   @map("fcm_token")
   isCreator       Boolean   @default(false) @map("is_creator")
   isVerified      Boolean   @default(false) @map("is_verified")
   createdAt       DateTime  @default(now()) @map("created_at")
@@ -52,6 +53,7 @@ model User {
   
   followers       Follows[] @relation("following")
   following       Follows[] @relation("follower")
+  createdSeries   Series[]
 
   @@map("users")
 }
@@ -118,6 +120,7 @@ model VideoCategory {
   createdAt DateTime @default(now()) @map("created_at")
 
   videos    Video[]
+  series    Series[]
 
   @@map("video_categories")
 }
@@ -143,7 +146,11 @@ model Video {
   categoryId    Int           @map("category_id")
   genreId       Int?          @map("genre_id")
   
-  title         String        @db.VarChar(255)
+  seriesId      Int?          @map("series_id")
+  episodeNumber Int?          @map("episode_number") // For ordering within a series
+  seasonNumber  Int?          @default(1) @map("season_number") // Optional, defaults to Season 1
+  
+  title         String   @db.VarChar(255)
   description   String?       @db.Text
   videoUrl      String        @map("video_url") @db.VarChar(512)
   thumbnailUrl  String?       @map("thumbnail_url") @db.VarChar(512)
@@ -170,6 +177,7 @@ model Video {
   creator       User          @relation(fields: [creatorId], references: [id])
   category      VideoCategory @relation(fields: [categoryId], references: [id])
   genre         VideoGenre?   @relation(fields: [genreId], references: [id])
+  series        Series?       @relation(fields: [seriesId], references: [id])
   
   likes         VideoLike[]
   views         VideoView[]
@@ -286,7 +294,7 @@ model VideoLike {
 
 model VideoView {
   id        Int      @id @default(autoincrement())
-  userId    Int?     @map("user_id")
+  userId    Int?     @map("user_id") // Optional for anonymous views if we ever allow them, but usually tracked for history
   videoId   Int      @map("video_id")
   ipAddress String?  @map("ip_address")
   device    String?
@@ -323,6 +331,10 @@ model Comment {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   video     Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
 
+  parentId  Int?     @map("parent_id")
+  parent    Comment? @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[] @relation("CommentReplies")
+
   @@map("comments")
 }
 
@@ -336,4 +348,28 @@ model Follows {
 
   @@id([followerId, followingId])
   @@map("follows")
+}
+
+// Series
+model Series {
+  id            Int      @id @default(autoincrement())
+  title         String   @db.VarChar(255)
+  description   String?  @db.Text
+  thumbnailUrl  String?  @map("thumbnail_url") @db.VarChar(512)
+  coverImageUrl String?  @map("cover_image_url") @db.VarChar(512)
+  
+  creatorId     Int      @map("creator_id")
+  categoryId    Int      @map("category_id")
+  
+  isActive      Boolean  @default(true) @map("is_active")
+  isFeatured    Boolean  @default(false) @map("is_featured") 
+  
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  creator       User          @relation(fields: [creatorId], references: [id])
+  category      VideoCategory @relation(fields: [categoryId], references: [id])
+  videos        Video[]
+
+  @@map("series")
 }

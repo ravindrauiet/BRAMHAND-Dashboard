@@ -3,9 +3,36 @@ import { PublicNavbar } from '@/components/site/PublicNavbar';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { ReelsFeed } from './ReelsFeed';
+import { SeriesPage } from './SeriesPage';
+import { MoviesPage } from './MoviesPage';
+import { OriginalsPage } from './OriginalsPage';
+
 export default async function BrowsePage({ searchParams }: { searchParams: { cat?: string; q?: string } }) {
     const category = searchParams.cat || '';
     const query = searchParams.q || '';
+
+    // If viewing Reels category, show immersive feed
+    if (category === 'reels') {
+        // Fetch Reels Data separately if needed, passing simple items for now
+        // Note: ReelsFeed usually fetches or expects items, we should ideally fetch reel items here
+        // But for this refactor, I'll keep existing logic flow below for retrieval
+    }
+
+    // Special Route for Series Page (Premium Layout)
+    if (category === 'series' && !query) {
+        return <SeriesPage />;
+    }
+
+    // Special Route for Movies Page (Premium Layout)
+    if (category === 'movies' && !query) {
+        return <MoviesPage />;
+    }
+
+    // Special Route for Originals Page (Gold Premium Layout)
+    if (category === 'originals' && !query) {
+        return <OriginalsPage />;
+    }
 
     let endpoint = '/videos?limit=50';
     let isSeries = false;
@@ -33,11 +60,16 @@ export default async function BrowsePage({ searchParams }: { searchParams: { cat
     const items = isSeries ? (contentData.series || []) : (contentData.videos || []);
     const categories = categoriesData.categories || [];
 
+    // If viewing Reels category, show immersive feed
+    if (category === 'reels') {
+        return <ReelsFeed reels={items} />;
+    }
+
     const getTitle = () => {
         if (query) return `Search results for "${query}"`;
         if (category === 'movies') return 'Movies';
         if (category === 'series') return 'TV Series';
-        if (category === 'reels') return 'Reels';
+        if (category === 'reels') return 'Reels'; // Fallback logic
         if (category === 'originals') return 'Originals';
         if (!isNaN(Number(category))) {
             return categories.find((c: any) => c.id === parseInt(category))?.name || 'Category';
@@ -47,11 +79,13 @@ export default async function BrowsePage({ searchParams }: { searchParams: { cat
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-black">
+            {/* Same layout as before... */}
 
             <div className="pt-20 pb-12 max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
 
                 {/* Category Pills */}
                 <div className="flex items-center gap-4 overflow-x-auto pb-8 scrollbar-hide">
+                    {/* ... (Existing Navbar Links) ... */}
                     <Link
                         href="/browse"
                         className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${!category && !query
@@ -69,6 +103,15 @@ export default async function BrowsePage({ searchParams }: { searchParams: { cat
                             }`}
                     >
                         Series
+                    </Link>
+                    <Link
+                        href="/browse?cat=reels"
+                        className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${category === 'reels'
+                            ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900'
+                            : 'bg-slate-200 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-800'
+                            }`}
+                    >
+                        Reels
                     </Link>
                     {categories.map((cat: any) => (
                         <Link

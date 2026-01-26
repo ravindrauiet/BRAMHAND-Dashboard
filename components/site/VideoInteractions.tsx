@@ -43,26 +43,17 @@ export function VideoInteractions({ videoId, initialLikes, initialIsLiked }: Vid
     };
 
     return (
-        <div className="flex items-center gap-2">
-            <div className="flex items-center bg-slate-100 dark:bg-slate-900 rounded-full overflow-hidden">
-                <button
-                    onClick={handleLike}
-                    disabled={isLoading}
-                    className={`flex items-center gap-2 px-4 py-2 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors border-r border-slate-200 dark:border-slate-800 ${isLiked ? 'text-blue-600' : ''}`}
-                >
-                    <ThumbsUp className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
-                    <span className="font-medium">{likes}</span>
-                </button>
-                <button className="px-4 py-2 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors rotate-180">
-                    <ThumbsUp className="w-5 h-5" />
-                </button>
-            </div>
-            <button className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-900 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
-                <Share2 className="w-5 h-5" />
-                <span className="font-medium">Share</span>
+        <div className="flex items-center rounded-full overflow-hidden bg-white/10 hover:bg-white/20 transition-colors">
+            <button
+                onClick={handleLike}
+                disabled={isLoading}
+                className={`flex items-center gap-2 px-4 py-2.5 border-r border-white/10 ${isLiked ? 'text-blue-500' : 'text-white'}`}
+            >
+                <ThumbsUp className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
+                <span className="font-medium text-sm">{likes}</span>
             </button>
-            <button className="p-2 bg-slate-100 dark:bg-slate-900 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
-                <MoreVertical className="w-5 h-5" />
+            <button className="px-4 py-2.5 rotate-180 text-white hover:text-red-400">
+                <ThumbsUp className="w-5 h-5" />
             </button>
         </div>
     );

@@ -151,7 +151,7 @@ export function LandingView({ featuredVideos, trendingVideos, latestVideos, seri
                     <div className="no-scrollbar flex gap-8 overflow-x-auto pb-4">
                         {series.map((video) => (
                             <div key={video.id} className="group min-w-[380px] md:min-w-[440px] flex-shrink-0 cursor-pointer">
-                                <Link href={`/watch/${video.id}`}>
+                                <Link href={`/series/${video.id}`}>
                                     <div className="aspect-video w-full rounded-3xl bg-slate-800 border border-white/10 overflow-hidden relative shadow-xl">
                                         <Image
                                             src={getThumbnail(video)}

@@ -1,17 +1,17 @@
-import { Facebook, Twitter, Instagram, Youtube, Play } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Youtube, Mail, ArrowRight, Globe, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
 export function PublicFooter() {
     return (
-        <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-black pt-16 pb-8">
-            <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 mb-16">
+        <footer className="bg-[#050505] text-[#a1a1a1] border-t border-[#1a1a1a] pt-20 pb-10 font-sans">
+            <div className="max-w-[1920px] mx-auto px-4 sm:px-12 lg:px-20">
 
-                    {/* Brand Column */}
-                    <div className="lg:col-span-4 space-y-6">
-                        <Link href="/" className="flex items-center gap-2 group">
-                            <div className="w-8 h-8 relative rounded-lg overflow-hidden shadow-lg group-hover:shadow-blue-500/25 transition-all">
+                {/* Upper Section: Brand & Newsletter */}
+                <div className="flex flex-col lg:flex-row justify-between gap-12 lg:gap-24 mb-20">
+                    <div className="lg:w-1/3 space-y-8">
+                        <Link href="/" className="flex items-center gap-3">
+                            <div className="w-10 h-10 relative rounded-lg overflow-hidden">
                                 <Image
                                     src="/logo/Tirhutra.jpeg"
                                     alt="Tirhuta Logo"
@@ -19,79 +19,140 @@ export function PublicFooter() {
                                     className="object-cover"
                                 />
                             </div>
-                            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600 dark:from-white dark:to-slate-300">
-                                Tirhuta
-                            </span>
+                            <span className="text-3xl font-serif font-bold text-white tracking-wide">Tirhuta</span>
                         </Link>
-                        <p className="text-slate-500 dark:text-slate-400 leading-relaxed max-w-sm">
-                            The ultimate destination for streaming high-quality video content. Join our community of creators and viewers today.
+                        <p className="text-lg font-light leading-relaxed max-w-md text-[#888]">
+                            Immerse yourself in the untold stories of Mithila. The premier destination for streaming high-quality cinematic experiences, tailored for the connoisseur.
                         </p>
-                        <div className="flex gap-4">
-                            <SocialLink icon={Facebook} href="#" />
-                            <SocialLink icon={Twitter} href="#" />
-                            <SocialLink icon={Instagram} href="#" />
-                            <SocialLink icon={Youtube} href="#" />
+
+                        <div className="flex gap-6 pt-4">
+                            <SocialLink icon={Facebook} href="#" ariaLabel="Facebook" />
+                            <SocialLink icon={Twitter} href="#" ariaLabel="Twitter" />
+                            <SocialLink icon={Instagram} href="#" ariaLabel="Instagram" />
+                            <SocialLink icon={Youtube} href="#" ariaLabel="Youtube" />
                         </div>
                     </div>
 
-                    {/* Links Columns */}
-                    <div className="lg:col-span-2">
-                        <h4 className="font-bold text-slate-900 dark:text-white mb-6">Discover</h4>
-                        <ul className="space-y-4 text-slate-500 dark:text-slate-400">
-                            <li><Link href="/browse" className="hover:text-blue-600 transition-colors">Browse</Link></li>
-                            <li><Link href="/trending" className="hover:text-blue-600 transition-colors">Trending</Link></li>
-                            <li><Link href="/music" className="hover:text-blue-600 transition-colors">Music</Link></li>
+                    <div className="lg:w-1/3">
+                        <h3 className="text-white font-serif text-2xl mb-6">Stay Connected</h3>
+                        <p className="mb-6 font-light">Join our newsletter for exclusive premieres and behind-the-scenes access.</p>
+                        <form className="flex gap-2">
+                            <div className="relative flex-grow">
+                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#666]" />
+                                <input
+                                    type="email"
+                                    placeholder="Enter your email address"
+                                    className="w-full bg-[#111] border border-[#333] rounded-full py-4 pl-12 pr-6 text-white text-sm focus:outline-none focus:border-[#D4AF37] transition-colors"
+                                />
+                            </div>
+                            <button className="bg-[#D4AF37] hover:bg-[#b5952f] text-black font-bold rounded-full w-14 h-14 flex items-center justify-center transition-all hover:scale-105">
+                                <ArrowRight className="w-6 h-6" />
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                {/* Middle Section: SEO Links Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-10 mb-20 border-t border-[#1a1a1a] pt-16">
+
+                    <div>
+                        <h4 className="text-white font-bold uppercase tracking-widest text-xs mb-8 text-[#D4AF37]">Streaming</h4>
+                        <ul className="space-y-4 text-sm">
+                            <li><FooterLink href="/browse">All Content</FooterLink></li>
+                            <li><FooterLink href="/browse?cat=series">TV Shows & Series</FooterLink></li>
+                            <li><FooterLink href="/browse?cat=movies">Movies</FooterLink></li>
+                            <li><FooterLink href="/browse?cat=originals">Tirhuta Originals</FooterLink></li>
+                            <li><FooterLink href="/browse?cat=reels">Reels & Shorts</FooterLink></li>
                         </ul>
                     </div>
 
-                    <div className="lg:col-span-2">
-                        <h4 className="font-bold text-slate-900 dark:text-white mb-6">Support</h4>
-                        <ul className="space-y-4 text-slate-500 dark:text-slate-400">
-                            <li><Link href="/help" className="hover:text-blue-600 transition-colors">Help Center</Link></li>
-                            <li><Link href="/terms" className="hover:text-blue-600 transition-colors">Terms of Service</Link></li>
-                            <li><Link href="/privacy" className="hover:text-blue-600 transition-colors">Privacy Policy</Link></li>
-                            <li><Link href="/contact" className="hover:text-blue-600 transition-colors">Contact Us</Link></li>
+                    <div>
+                        <h4 className="text-white font-bold uppercase tracking-widest text-xs mb-8 text-[#D4AF37]">Popular Genres</h4>
+                        <ul className="space-y-4 text-sm">
+                            <li><FooterLink href="/browse?genre=action">Action & Adventure</FooterLink></li>
+                            <li><FooterLink href="/browse?genre=drama">Drama & Romance</FooterLink></li>
+                            <li><FooterLink href="/browse?genre=comedy">Comedy</FooterLink></li>
+                            <li><FooterLink href="/browse?genre=thriller">Mystery & Thriller</FooterLink></li>
+                            <li><FooterLink href="/browse?genre=sci-fi">Sci-Fi & Fantasy</FooterLink></li>
                         </ul>
                     </div>
 
-                    {/* App Download */}
-                    <div className="lg:col-span-4">
-                        <h4 className="font-bold text-slate-900 dark:text-white mb-6">Get the App</h4>
-                        <div className="flex flex-col sm:flex-row gap-4">
-                            <button className="flex items-center gap-3 px-4 py-3 bg-slate-900 dark:bg-slate-800 text-white rounded-xl hover:bg-slate-800 dark:hover:bg-slate-700 transition-colors text-left">
-                                <div className="text-2xl"></div>
+                    <div>
+                        <h4 className="text-white font-bold uppercase tracking-widest text-xs mb-8 text-[#D4AF37]">Corporate</h4>
+                        <ul className="space-y-4 text-sm">
+                            <li><FooterLink href="/about">About Us</FooterLink></li>
+                            <li><FooterLink href="/careers">Careers</FooterLink></li>
+                            <li><FooterLink href="/press">Press & Media</FooterLink></li>
+                            <li><FooterLink href="/investors">Investor Relations</FooterLink></li>
+                            <li><FooterLink href="/contact">Contact Support</FooterLink></li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h4 className="text-white font-bold uppercase tracking-widest text-xs mb-8 text-[#D4AF37]">Legal</h4>
+                        <ul className="space-y-4 text-sm">
+                            <li><FooterLink href="/privacy">Privacy Policy</FooterLink></li>
+                            <li><FooterLink href="/terms">Terms of Service</FooterLink></li>
+                            <li><FooterLink href="/cookies">Cookie Preferences</FooterLink></li>
+                            <li><FooterLink href="/sitemap">Sitemap</FooterLink></li>
+                        </ul>
+                    </div>
+
+                    <div className="col-span-2 md:col-span-4 lg:col-span-1">
+                        <h4 className="text-white font-bold uppercase tracking-widest text-xs mb-8 text-[#D4AF37]">Get the App</h4>
+                        <div className="flex flex-col gap-3">
+                            <button className="flex items-center gap-3 px-4 py-3 bg-[#111] hover:bg-[#222] border border-[#333] rounded-xl transition-all group w-full max-w-[200px]">
+                                <div className="text-2xl text-white group-hover:text-[#D4AF37] transition-colors"></div>
                                 <div>
-                                    <div className="text-[10px] uppercase font-medium text-slate-400">Download on the</div>
-                                    <div className="font-bold leading-none">App Store</div>
+                                    <div className="text-[9px] uppercase font-medium text-[#666]">Download on the</div>
+                                    <div className="font-bold text-white text-sm leading-none">App Store</div>
                                 </div>
                             </button>
-                            <button className="flex items-center gap-3 px-4 py-3 bg-slate-900 dark:bg-slate-800 text-white rounded-xl hover:bg-slate-800 dark:hover:bg-slate-700 transition-colors text-left">
-                                <div className="text-xl">▶</div>
+                            <button className="flex items-center gap-3 px-4 py-3 bg-[#111] hover:bg-[#222] border border-[#333] rounded-xl transition-all group w-full max-w-[200px]">
+                                <div className="text-xl text-white group-hover:text-[#D4AF37] transition-colors">▶</div>
                                 <div>
-                                    <div className="text-[10px] uppercase font-medium text-slate-400">Get it on</div>
-                                    <div className="font-bold leading-none">Google Play</div>
+                                    <div className="text-[9px] uppercase font-medium text-[#666]">Get it on</div>
+                                    <div className="font-bold text-white text-sm leading-none">Google Play</div>
                                 </div>
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <div className="pt-8 border-t border-slate-100 dark:border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-400">
-                    <p>© 2024 Tirhuta. All rights reserved.</p>
-                    <div className="flex gap-6">
-                        <span>Made with ❤️ for Creators</span>
-                        <div>Ravindra Nath Jha</div>
+                {/* Lower Section: Copyright */}
+                <div className="pt-8 border-t border-[#1a1a1a] flex flex-col md:flex-row justify-between items-center gap-6 text-xs font-medium text-[#666]">
+                    <p>© 2024 Tirhuta Streaming Services. All rights reserved.</p>
+                    <div className="flex items-center gap-8">
+                        <div className="flex items-center gap-2">
+                            <Globe className="w-4 h-4" /> English (India)
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <MapPin className="w-4 h-4" /> Mumbai, India
+                        </div>
                     </div>
                 </div>
+
             </div>
         </footer>
     );
 }
 
-function SocialLink({ icon: Icon, href }: { icon: any, href: string }) {
+function SocialLink({ icon: Icon, href, ariaLabel }: { icon: any, href: string, ariaLabel: string }) {
     return (
-        <Link href={href} className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:bg-blue-600 hover:text-white transition-all">
-            <Icon className="w-4 h-4" />
+        <Link
+            href={href}
+            aria-label={ariaLabel}
+            className="w-12 h-12 rounded-full bg-[#111] border border-[#333] flex items-center justify-center text-white hover:border-[#D4AF37] hover:text-[#D4AF37] transition-all hover:scale-110"
+        >
+            <Icon className="w-5 h-5" />
         </Link>
     );
+}
+
+function FooterLink({ href, children }: { href: string, children: React.ReactNode }) {
+    return (
+        <Link href={href} className="hover:text-[#D4AF37] transition-colors hover:pl-1 block">
+            {children}
+        </Link>
+    )
 }
