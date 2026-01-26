@@ -23,7 +23,7 @@ export function LandingView({ featuredVideos, trendingVideos, latestVideos, seri
 
     const getCreatorImage = (video: any) => {
         if (!video) return null;
-        return video.creator?.profileImage || video.creator_image || video.creator?.image;
+        return video.creator_image || video.creator?.profileImage || video.creator?.image;
     };
 
     // Correct mapping from props
@@ -60,10 +60,16 @@ export function LandingView({ featuredVideos, trendingVideos, latestVideos, seri
                             <div className="flex items-center gap-2">
                                 <div className="inline-flex items-center gap-3 rounded-full glassmorphism px-4 py-1.5 border-[#fbbf24]/20">
                                     <span className="material-symbols-outlined text-[#fbbf24] text-lg">verified_user</span>
-                                    <span className="text-[12px] font-bold uppercase tracking-[0.2em] text-[#fbbf24]">Featured Original</span>
+                                    <span className="text-[12px] font-bold uppercase tracking-[0.2em] text-[#fbbf24]">
+                                        {heroVideo.is_featured ? 'Featured Original' : 'Premium Content'}
+                                    </span>
                                 </div>
-                                <div className="h-[1px] w-20 bg-white/20"></div>
-                                <span className="text-xs font-bold tracking-widest text-white/50">TRENDING #1</span>
+                                {heroVideo.is_trending && (
+                                    <>
+                                        <div className="h-[1px] w-20 bg-white/20"></div>
+                                        <span className="text-xs font-bold tracking-widest text-white/50">TRENDING NOW</span>
+                                    </>
+                                )}
                             </div>
 
                             <h1 className="text-4xl md:text-6xl lg:text-7xl font-black leading-[1] font-serif-display italic tracking-tighter">
@@ -71,12 +77,14 @@ export function LandingView({ featuredVideos, trendingVideos, latestVideos, seri
                             </h1>
 
                             <div className="flex items-center gap-6 text-sm font-semibold text-white/80">
-
-                                <span>{heroVideo.createdAt && !isNaN(new Date(heroVideo.createdAt).getTime()) ? new Date(heroVideo.createdAt).getFullYear() : '2024'}</span>
-                                <span className="px-2 py-0.5 border border-white/20 rounded text-[10px]">4K ULTRA HD</span>
-                                {heroVideo.duration > 0 && (
+                                <span>{new Date(heroVideo.created_at || heroVideo.createdAt).getFullYear()}</span>
+                                {heroVideo.content_rating && (
+                                    <span className="px-2 py-0.5 border border-white/20 rounded text-[10px]">{heroVideo.content_rating}</span>
+                                )}
+                                {heroVideo.duration && heroVideo.duration > 0 && (
                                     <span>{formatDuration(heroVideo.duration)}</span>
                                 )}
+                                <span className="px-2 py-0.5 border border-white/20 rounded text-[10px]">{heroVideo.category_name || 'Premium'}</span>
                             </div>
 
                             <p className="text-xl font-medium text-white/70 leading-relaxed max-w-2xl">
@@ -112,11 +120,11 @@ export function LandingView({ featuredVideos, trendingVideos, latestVideos, seri
                 {/* Check Filters */}
                 <div className="relative z-20 -mt-24">
                     <div className="no-scrollbar flex items-center gap-4 overflow-x-auto pb-6">
-                        <CategoryFilter active icon="movie" label="All Content" />
-                        <CategoryFilter icon="theaters" label="Movies" />
-                        <CategoryFilter icon="live_tv" label="Series" />
-                        <CategoryFilter icon="slow_motion_video" label="Reels" />
-                        <CategoryFilter icon="workspace_premium" label="Originals" />
+                        <CategoryFilter active icon="movie" label="All Content" href="/" />
+                        <CategoryFilter icon="theaters" label="Movies" href="/browse?cat=movies" />
+                        <CategoryFilter icon="live_tv" label="Series" href="/browse?cat=series" />
+                        <CategoryFilter icon="slow_motion_video" label="Reels" href="/browse?cat=reels" />
+                        <CategoryFilter icon="workspace_premium" label="Originals" href="/browse?cat=originals" />
                     </div>
                 </div>
 
@@ -138,7 +146,7 @@ export function LandingView({ featuredVideos, trendingVideos, latestVideos, seri
                                     </div>
                                     <div className="mt-4 px-1">
                                         <p className="text-base font-bold text-white group-hover:text-[#fbbf24] transition-colors truncate">{video.title}</p>
-                                        <p className="text-xs font-semibold text-white/40 mt-1">{video.category?.name || 'Genre'} • {formatDuration(video.duration)}</p>
+                                        <p className="text-xs font-semibold text-white/40 mt-1">{video.category_name || video.category?.name || 'Movie'} • {formatDuration(video.duration)}</p>
                                     </div>
                                 </Link>
                             </div>
@@ -160,11 +168,14 @@ export function LandingView({ featuredVideos, trendingVideos, latestVideos, seri
                                             className="object-cover transition-transform duration-700 group-hover:scale-105"
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent p-6 flex flex-col justify-end">
-                                            <div className="flex items-center gap-3 mb-3">
-                                                <span className="bg-[#fbbf24]/20 text-[#fbbf24] text-[10px] font-black px-3 py-1 rounded-full border border-[#fbbf24]/30 uppercase tracking-tighter">New Episodes</span>
+                                            <h3 className="text-2xl font-bold text-white group-hover:text-[#fbbf24] transition-colors line-clamp-1">{video.title}</h3>
+                                            <div className="flex items-center gap-2 text-xs font-semibold text-white/60 mt-2">
+                                                <span className="bg-white/10 px-2 py-0.5 rounded text-white">{new Date(video.created_at || video.createdAt).getFullYear()}</span>
+                                                <span>•</span>
+                                                <span>{video.episodeCount || 0} Episodes</span>
+                                                <span>•</span>
+                                                <span>{video.categoryName || 'Series'}</span>
                                             </div>
-                                            <h3 className="text-2xl font-bold text-white group-hover:text-[#fbbf24] transition-colors">{video.title}</h3>
-                                            <p className="text-white/60 text-sm mt-1 line-clamp-1">{video.description}</p>
                                         </div>
                                     </div>
                                 </Link>
@@ -181,7 +192,7 @@ export function LandingView({ featuredVideos, trendingVideos, latestVideos, seri
                                 <span className="material-symbols-outlined text-[#fbbf24] fill-1">bolt</span>
                                 <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#fbbf24]">Trending Reels</span>
                             </div>
-                            <h2 className="text-4xl font-serif-display font-bold text-white">Moments of Mithila</h2>
+                            <h2 className="text-4xl font-serif-display font-bold text-white">Latest Shorts</h2>
                         </div>
                         <div className="flex items-center gap-6">
                             <div className="flex -space-x-3">
@@ -215,20 +226,20 @@ export function LandingView({ featuredVideos, trendingVideos, latestVideos, seri
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30"></div>
                                         <div className="absolute top-6 left-6 flex items-center gap-2">
                                             <span className="material-symbols-outlined text-white text-lg drop-shadow-lg">visibility</span>
-                                            <span className="text-xs font-bold text-white drop-shadow-md">{video.views || '0'}</span>
+                                            <span className="text-xs font-bold text-white drop-shadow-md">{video.views_count || video.views || '0'}</span>
                                         </div>
                                         <div className="absolute bottom-0 inset-x-0 p-8 space-y-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="relative h-10 w-10 rounded-full border-2 border-[#fbbf24] bg-slate-500 overflow-hidden">
                                                     <Image
                                                         src={getCreatorImage(video) || 'https://ui-avatars.com/api/?name=Creator&background=random'}
-                                                        alt={video.creator?.name || 'Creator'}
+                                                        alt={video.creator_name || video.creator?.name || 'Creator'}
                                                         fill
                                                         className="object-cover"
                                                     />
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-black text-white">@{video.creator?.name || 'Creator'}</p>
+                                                    <p className="text-sm font-black text-white">@{video.creator_name || video.creator?.name || 'Creator'}</p>
                                                 </div>
                                             </div>
                                             <p className="text-sm text-white/90 font-medium line-clamp-2 leading-relaxed">{video.title}</p>
@@ -267,8 +278,16 @@ export function LandingView({ featuredVideos, trendingVideos, latestVideos, seri
                                             EDITOR'S CHOICE
                                         </div>
                                         <h3 className="text-4xl md:text-5xl font-serif-display font-black text-white italic">{featuredVideos[1].title}</h3>
-                                        <p className="text-white/60 max-w-lg text-lg line-clamp-2">{featuredVideos[1].description}</p>
-                                        <button className="mt-4 px-8 py-4 bg-[#fbbf24] text-black font-black rounded-2xl hover:scale-105 transition-transform uppercase tracking-wider text-sm shadow-xl shadow-[#fbbf24]/20">
+                                        <p className="text-white/60 max-w-lg text-lg line-clamp-2 md:line-clamp-3 mb-4">{featuredVideos[1].description}</p>
+                                        <div className="flex items-center gap-4 text-sm font-medium text-white/40 mb-6">
+                                            <span>{new Date(featuredVideos[1].created_at || featuredVideos[1].createdAt).getFullYear()}</span>
+                                            <span className="w-1 h-1 bg-white/20 rounded-full"></span>
+                                            <span>{featuredVideos[1].category_name || featuredVideos[1].category?.name || 'Original'}</span>
+                                            <span className="w-1 h-1 bg-white/20 rounded-full"></span>
+                                            <span>{formatDuration(featuredVideos[1].duration)}</span>
+                                        </div>
+                                        <button className="px-8 py-3 bg-[#fbbf24] text-black font-black rounded-xl hover:scale-105 transition-transform uppercase tracking-wider text-xs shadow-xl shadow-[#fbbf24]/20 flex items-center gap-2">
+                                            <Play className="w-4 h-4 fill-current" />
                                             WATCH NOW
                                         </button>
                                     </div>
@@ -276,18 +295,28 @@ export function LandingView({ featuredVideos, trendingVideos, latestVideos, seri
                             )}
 
                             {/* Side Originals (3rd & 4th Items) */}
-                            <div className="flex flex-col gap-8">
+                            <div className="flex flex-col gap-6">
                                 {featuredVideos[2] && (
-                                    <Link href={`/watch/${featuredVideos[2].id}`} className="flex-1 group relative overflow-hidden rounded-[2rem] cursor-pointer border border-white/10 bg-slate-900 block">
+                                    <Link href={`/watch/${featuredVideos[2].id}`} className="flex-1 group relative overflow-hidden rounded-[2rem] cursor-pointer border border-white/10 bg-slate-900 block shadow-lg">
                                         <Image
                                             src={getThumbnail(featuredVideos[2])}
                                             alt={featuredVideos[2].title}
                                             fill
                                             className="object-cover transition-transform duration-700 group-hover:scale-110"
                                         />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a14]/80 to-transparent"></div>
-                                        <div className="absolute bottom-0 p-6">
-                                            <h4 className="text-xl font-bold text-white line-clamp-1">{featuredVideos[2].title}</h4>
+                                        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a14] via-[#0a0a14]/10 to-transparent"></div>
+                                        <div className="absolute top-0 right-0 p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                                            <div className="bg-white/10 backdrop-blur-md text-white border border-white/20 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                                                Trending
+                                            </div>
+                                        </div>
+                                        <div className="absolute bottom-0 p-6 w-full bg-gradient-to-t from-black via-black/80 to-transparent">
+                                            <h4 className="text-xl font-bold text-white line-clamp-1 mb-1">{featuredVideos[2].title}</h4>
+                                            <div className="flex items-center gap-2 text-xs font-medium text-white/50">
+                                                <span>{new Date(featuredVideos[2].created_at || featuredVideos[2].createdAt).getFullYear()}</span>
+                                                <span className="w-1 h-1 bg-white/30 rounded-full"></span>
+                                                <span>{featuredVideos[2].category_name || featuredVideos[2].category?.name || 'Original'}</span>
+                                            </div>
                                         </div>
                                     </Link>
                                 )}
@@ -300,8 +329,18 @@ export function LandingView({ featuredVideos, trendingVideos, latestVideos, seri
                                             className="object-cover transition-transform duration-700 group-hover:scale-110"
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a14]/80 to-transparent"></div>
-                                        <div className="absolute bottom-0 p-6">
-                                            <h4 className="text-xl font-bold text-white line-clamp-1">{featuredVideos[3].title}</h4>
+                                        <div className="absolute top-0 right-0 p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                                            <div className="bg-[#fbbf24] text-black text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                                                Premium
+                                            </div>
+                                        </div>
+                                        <div className="absolute bottom-0 p-6 w-full bg-gradient-to-t from-black via-black/80 to-transparent">
+                                            <h4 className="text-xl font-bold text-white line-clamp-1 mb-1">{featuredVideos[3].title}</h4>
+                                            <div className="flex items-center gap-2 text-xs font-medium text-white/50">
+                                                <span>{new Date(featuredVideos[3].created_at || featuredVideos[3].createdAt).getFullYear()}</span>
+                                                <span className="w-1 h-1 bg-white/30 rounded-full"></span>
+                                                <span>{featuredVideos[3].category_name || featuredVideos[3].category?.name || 'Original'}</span>
+                                            </div>
                                         </div>
                                     </Link>
                                 )}
@@ -333,15 +372,18 @@ function Section({ title, viewAllLink, children }: { title: string, viewAllLink:
     );
 }
 
-function CategoryFilter({ icon, label, active }: { icon: string, label: string, active?: boolean }) {
+function CategoryFilter({ icon, label, active, href }: { icon: string, label: string, active?: boolean, href: string }) {
     return (
-        <div className={`flex h-12 shrink-0 cursor-pointer items-center justify-center gap-3 rounded-2xl px-8 text-sm font-bold transition-all ${active
-            ? 'bg-[#fbbf24] text-black premium-glow font-black'
-            : 'glassmorphism text-white/90 hover:bg-white/10 font-semibold'
-            }`}>
+        <Link
+            href={href}
+            className={`flex h-12 shrink-0 cursor-pointer items-center justify-center gap-3 rounded-2xl px-8 text-sm font-bold transition-all ${active
+                ? 'bg-[#fbbf24] text-black premium-glow font-black'
+                : 'glassmorphism text-white/90 hover:bg-white/10 font-semibold'
+                }`}
+        >
             <span className="material-symbols-outlined text-lg">{icon}</span>
             {label}
-        </div>
+        </Link>
     )
 }
 
