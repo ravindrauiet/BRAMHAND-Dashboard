@@ -118,26 +118,44 @@ function ContentRow({ title, items }: { title: string, items: any[] }) {
                 {/* Scroll Container */}
                 <div className="flex gap-4 overflow-x-auto pb-8 scrollbar-hide px-0 snap-x snap-mandatory">
                     {items.map((series) => (
-                        <Link
-                            href={`/series/${series.id}`}
-                            key={series.id}
-                            className="flex-shrink-0 w-[160px] md:w-[200px] aspect-[2/3] relative rounded-md overflow-hidden bg-gray-800 transition-all duration-300 hover:scale-105 hover:z-20 hover:ring-2 hover:ring-white snap-center cursor-pointer group/card"
-                        >
-                            <Image
-                                src={getThumb(series)}
-                                alt={series.title}
-                                fill
-                                className="object-cover"
-                            />
-                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/card:opacity-100 transition-opacity flex flex-col justify-end p-3">
-                                <h3 className="font-bold text-sm text-white line-clamp-2 leading-tight mb-1">{series.title}</h3>
-                                <div className="flex flex-wrap gap-2 text-[10px] text-gray-300">
-                                    <span className="text-green-400 font-bold">New</span>
+                        <div key={series.id} className="flex-shrink-0 w-[160px] md:w-[200px] snap-center group/card">
+                            <Link
+                                href={`/series/${series.id}`}
+                                className="block relative w-full aspect-[2/3] rounded-md overflow-hidden bg-gray-800 shadow-lg transition-all duration-300 hover:scale-105 hover:z-20 hover:ring-2 hover:ring-white mb-3"
+                            >
+                                <Image
+                                    src={getThumb(series)}
+                                    alt={series.title}
+                                    fill
+                                    className="object-cover"
+                                />
+                                {/* Overlay only on hover */}
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/card:opacity-100 transition-opacity flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white scale-0 group-hover/card:scale-100 transition-transform duration-300 border border-white/50">
+                                        <Play className="w-5 h-5 fill-current" />
+                                    </div>
+                                </div>
+                            </Link>
+
+                            {/* Series Info Below Card */}
+                            <div className="px-1 space-y-1.5">
+                                <h3 className="font-bold text-sm text-gray-100 line-clamp-1 group-hover/card:text-blue-400 transition-colors">
+                                    {series.title}
+                                </h3>
+
+                                <div className="flex items-center gap-2 text-xs text-gray-400 font-medium whitespace-nowrap overflow-hidden">
+                                    <span className="text-gray-900 bg-white/90 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                                        {new Date(series.created_at || series.createdAt).getFullYear()}
+                                    </span>
                                     <span>•</span>
-                                    <span>{series.categoryName || 'Series'}</span>
+                                    <span>{series.videoCount || 0} Episodes</span>
+                                </div>
+
+                                <div className="text-xs text-gray-500 truncate hover:text-gray-300 transition-colors">
+                                    {series.creator?.fullName || series.creator?.name || 'Tirhuta Studios'}
                                 </div>
                             </div>
-                        </Link>
+                        </div>
                     ))}
                 </div>
 
