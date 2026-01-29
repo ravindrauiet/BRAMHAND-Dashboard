@@ -24,6 +24,8 @@ export const authOptions: NextAuthOptions = {
 
                 try {
                     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+                    console.log('NextAuth Authorize: Calling API at', apiUrl, 'with email:', credentials?.email);
+
                     const res = await fetch(`${apiUrl}/auth/login`, {
                         method: "POST",
                         body: JSON.stringify({
@@ -34,6 +36,7 @@ export const authOptions: NextAuthOptions = {
                     });
 
                     const data = await res.json();
+                    console.log('NextAuth Authorize: API Response Status:', res.status);
 
                     if (res.ok && data.token) {
                         return {
@@ -45,6 +48,7 @@ export const authOptions: NextAuthOptions = {
                             accessToken: data.token
                         };
                     }
+                    console.log('NextAuth Authorize: Fail data:', data);
                     return null;
                 } catch (e) {
                     console.error("Login Error:", e);

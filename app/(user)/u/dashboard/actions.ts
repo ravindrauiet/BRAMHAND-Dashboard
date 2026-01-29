@@ -1,6 +1,5 @@
 'use server';
 
-import { db } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
@@ -14,43 +13,25 @@ export async function getMyContent(type?: 'VIDEO' | 'REEL') {
             return [];
         }
 
+        console.log(`getMyContent: Fetching ${type || 'all'} content via API`);
+
         const userId = parseInt((session as any).user.id);
-        if (isNaN(userId)) {
-            console.error('getMyContent: Invalid user ID');
+        const headers: any = {};
+        if (!isNaN(userId)) {
+            headers['x-user-id'] = userId.toString();
+        }
+
+        const endpoint = type ? `/videos/my-content?type=${type}` : '/videos/my-content';
+        const response = await fetchFromApi(endpoint, { headers });
+
+        if (!response.success) {
+            console.error('getMyContent API error:', response);
             return [];
         }
 
-        console.log(`getMyContent: Fetching ${type || 'all'} content for user ${userId}`);
+        const videos = response.videos || [];
 
-        // Query database directly for better reliability
-        let videos;
-        if (type) {
-            videos = await db.$queryRaw`
-                SELECT v.*, c.name as categoryName
-                FROM videos v
-                LEFT JOIN video_categories c ON v.category_id = c.id
-                WHERE v.creator_id = ${userId} AND v.type = ${type}
-                ORDER BY v.created_at DESC
-            `;
-        } else {
-            videos = await db.$queryRaw`
-                SELECT v.*, c.name as categoryName
-                FROM videos v
-                LEFT JOIN video_categories c ON v.category_id = c.id
-                WHERE v.creator_id = ${userId}
-                ORDER BY v.created_at DESC
-            `;
-        }
-
-        console.log(`getMyContent: Found ${(videos as any[]).length} ${type || 'all'} videos for user ${userId}`);
-
-        if ((videos as any[]).length > 0) {
-            console.log('getMyContent: First video:', {
-                id: (videos as any[])[0].id,
-                title: (videos as any[])[0].title,
-                type: (videos as any[])[0].type
-            });
-        }
+        console.log(`getMyContent: Found ${videos.length} ${type || 'all'} videos`);
 
         return videos as any[];
     } catch (error) {
