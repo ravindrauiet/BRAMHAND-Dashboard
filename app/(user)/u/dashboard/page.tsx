@@ -132,20 +132,24 @@ export default async function UserDashboard() {
                         </div>
 
                         <div className="flex gap-4">
-                            <Link
-                                href="/u/upload-video"
-                                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl font-bold flex items-center gap-2 transition-colors"
-                            >
-                                <Film className="w-5 h-5" />
-                                Upload Video
-                            </Link>
-                            <Link
-                                href="/u/upload-reel"
-                                className="bg-pink-600 hover:bg-pink-700 text-white px-6 py-2 rounded-xl font-bold flex items-center gap-2 transition-colors"
-                            >
-                                <PlaySquare className="w-5 h-5" />
-                                Upload Reel
-                            </Link>
+                            {(user.isCreator || (session as any).user.role === 'admin') && (
+                                <>
+                                    <Link
+                                        href="/u/upload-video"
+                                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl font-bold flex items-center gap-2 transition-colors"
+                                    >
+                                        <Film className="w-5 h-5" />
+                                        Upload Video
+                                    </Link>
+                                    <Link
+                                        href="/u/upload-reel"
+                                        className="bg-pink-600 hover:bg-pink-700 text-white px-6 py-2 rounded-xl font-bold flex items-center gap-2 transition-colors"
+                                    >
+                                        <PlaySquare className="w-5 h-5" />
+                                        Upload Reel
+                                    </Link>
+                                </>
+                            )}
                             <UserSignOutButton />
                         </div>
                     </div>
