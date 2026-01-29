@@ -16,6 +16,10 @@ const playfair = Playfair_Display({
 export const metadata: Metadata = {
     title: 'Tirhuta | Movies, Series & Reels',
     description: 'The ultimate destination for premium storytelling.',
+    icons: {
+        icon: '/logo/Tirhutra.jpeg',
+        apple: '/logo/Tirhutra.jpeg', // Optional: for Apple devices
+    },
 }
 
 export default function RootLayout({
