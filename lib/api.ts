@@ -35,3 +35,14 @@ export async function fetchPublicApi(endpoint: string) {
     }
     return res.json();
 }
+
+export async function deleteFromApi(endpoint: string) {
+    return fetchFromApi(endpoint, { method: 'DELETE' });
+}
+
+export async function patchToApi(endpoint: string, body: any) {
+    return fetchFromApi(endpoint, {
+        method: 'PATCH',
+        body: JSON.stringify(body)
+    });
+}

@@ -4,54 +4,25 @@ import { useState } from 'react';
 import { Edit, Trash2, CheckCircle, XCircle, Search, Filter, Shield, User as UserIcon, Mail, Phone, MoreVertical, BadgeCheck, Zap, Eye } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { deleteUser, toggleUserCreatorStatus, toggleUserVerifiedStatus } from './actions';
+import { deleteUser, toggleUserCreatorStatus, toggleUserVerifiedStatus, updateUserRole } from './actions';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface UserListProps {
     users: any[];
 }
 
 export function UserList({ users }: UserListProps) {
-    const [searchQuery, setSearchQuery] = useState('');
-    const [filter, setFilter] = useState('all'); // all, creators, verified
-
-    const filteredUsers = users.filter(user => {
-        const matchesSearch =
-            user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (user.email && user.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
-            (user.mobileNumber && user.mobileNumber.includes(searchQuery));
-
-        if (filter === 'creators') return matchesSearch && user.isCreator;
-        if (filter === 'verified') return matchesSearch && user.isVerified;
-        return matchesSearch;
-    });
-
     return (
         <div className="space-y-6">
-            {/* Filters Bar */}
-            <div className="flex flex-col md:flex-row gap-4 bg-white/80 dark:bg-slate-900/50 backdrop-blur-xl border border-gray-200 dark:border-slate-800 p-4 rounded-xl shadow-sm">
-                <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                    <input
-                        type="text"
-                        placeholder="Search users by name, email, or mobile..."
-                        className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                </div>
-                <div className="flex items-center gap-2">
-                    <Filter className="w-5 h-5 text-slate-400" />
-                    <select
-                        className="px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white min-w-[150px]"
-                        value={filter}
-                        onChange={(e) => setFilter(e.target.value)}
-                    >
-                        <option value="all">All Users</option>
-                        <option value="creators">Creators Only</option>
-                        <option value="verified">Verified Only</option>
-                    </select>
-                </div>
-            </div>
+
+            {/* Users Table */}
 
             {/* Users Table */}
             <div className="bg-white/80 dark:bg-slate-900/50 backdrop-blur-xl border border-gray-200 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden">
@@ -62,11 +33,13 @@ export function UserList({ users }: UserListProps) {
                                 <th className="px-6 py-4 font-medium text-slate-500 dark:text-slate-400 uppercase text-xs tracking-wider">User Profile</th>
                                 <th className="px-6 py-4 font-medium text-slate-500 dark:text-slate-400 uppercase text-xs tracking-wider">Contact Info</th>
                                 <th className="px-6 py-4 font-medium text-slate-500 dark:text-slate-400 uppercase text-xs tracking-wider">Status</th>
+                                <th className="px-6 py-4 font-medium text-slate-500 dark:text-slate-400 uppercase text-xs tracking-wider">Role</th>
+                                <th className="px-6 py-4 font-medium text-slate-500 dark:text-slate-400 uppercase text-xs tracking-wider">Joined Date</th>
                                 <th className="px-6 py-4 font-medium text-slate-500 dark:text-slate-400 uppercase text-xs tracking-wider text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
-                            {filteredUsers.map((user) => (
+                            {users.map((user) => (
                                 <tr key={user.id} className="group hover:bg-gray-50 dark:hover:bg-slate-800/30 transition-colors">
                                     <td className="px-6 py-4">
                                         <Link href={`/dashboard/users/${user.id}`} className="block group/link">
@@ -119,24 +92,24 @@ export function UserList({ users }: UserListProps) {
                                             )}
                                         </div>
                                     </td>
+                                    <td className="px-6 py-4">
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize
+                                            ${user.role === 'admin' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300' :
+                                                user.role === 'subadmin' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300' :
+                                                    user.role === 'employee' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
+                                                        'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300'}`}>
+                                            {user.role || 'viewer'}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
+                                        {new Date(user.createdAt).toLocaleDateString(undefined, {
+                                            year: 'numeric',
+                                            month: 'short',
+                                            day: 'numeric'
+                                        })}
+                                    </td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex items-center justify-end gap-1">
-                                            <form action={toggleUserCreatorStatus.bind(null, user.id, !user.isCreator)}>
-                                                <button
-                                                    className={`p-2 rounded-lg transition-colors ${user.isCreator ? 'text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10' : 'text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10'}`}
-                                                    title={user.isCreator ? "Remove Creator Status" : "Promote to Creator"}
-                                                >
-                                                    <Zap className="w-4 h-4" />
-                                                </button>
-                                            </form>
-                                            <form action={toggleUserVerifiedStatus.bind(null, user.id, !user.isVerified)}>
-                                                <button
-                                                    className={`p-2 rounded-lg transition-colors ${user.isVerified ? 'text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10' : 'text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10'}`}
-                                                    title={user.isVerified ? "Remove Verification" : "Verify User"}
-                                                >
-                                                    <BadgeCheck className="w-4 h-4" />
-                                                </button>
-                                            </form>
                                             <Link
                                                 href={`/dashboard/users/${user.id}`}
                                                 className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-colors"
@@ -144,16 +117,49 @@ export function UserList({ users }: UserListProps) {
                                             >
                                                 <Eye className="w-4 h-4" />
                                             </Link>
-                                            <form action={deleteUser.bind(null, user.id)}>
-                                                <button className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors" title="Delete User">
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
-                                            </form>
+
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <button className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg transition-colors">
+                                                        <MoreVertical className="w-4 h-4" />
+                                                    </button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end" className="w-48">
+                                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem onClick={() => updateUserRole(user.id, 'admin')} className="gap-2">
+                                                        <Shield className="w-4 h-4" /> Make Admin
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => updateUserRole(user.id, 'subadmin')} className="gap-2">
+                                                        <Shield className="w-4 h-4" /> Make Sub-Admin
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => updateUserRole(user.id, 'employee')} className="gap-2">
+                                                        <UserIcon className="w-4 h-4" /> Make Employee
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => updateUserRole(user.id, 'creator')} className="gap-2">
+                                                        <Zap className="w-4 h-4" /> Make Creator
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => updateUserRole(user.id, 'viewer')} className="gap-2">
+                                                        <UserIcon className="w-4 h-4" /> Make Viewer
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem onClick={() => toggleUserVerifiedStatus(user.id, !user.isVerified)} className="gap-2">
+                                                        <BadgeCheck className="w-4 h-4" /> {user.isVerified ? 'Unverify User' : 'Verify User'}
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem
+                                                        className="text-red-600 focus:text-red-600 gap-2"
+                                                        onClick={() => deleteUser(user.id)}
+                                                    >
+                                                        <Trash2 className="w-4 h-4" /> Delete User
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
                                         </div>
                                     </td>
                                 </tr>
                             ))}
-                            {filteredUsers.length === 0 && (
+                            {users.length === 0 && (
                                 <tr>
                                     <td colSpan={4} className="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
                                         <UserIcon className="w-12 h-12 mx-auto mb-3 opacity-20" />
