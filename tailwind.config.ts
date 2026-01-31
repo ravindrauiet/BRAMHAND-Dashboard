@@ -19,9 +19,9 @@ const config: Config = {
                 "card-dark": "#181611",
             },
             fontFamily: {
-                "sans": ["Plus Jakarta Sans", "sans-serif"],
-                "serif-display": ["Playfair Display", "serif"],
-                "display": ["Spline Sans", "sans-serif"],
+                "sans": ["var(--font-poppins)", "sans-serif"],
+                "serif-display": ["var(--font-playfair)", "serif"],
+                "display": ["var(--font-poppins)", "sans-serif"],
             },
             backgroundImage: {
                 "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",

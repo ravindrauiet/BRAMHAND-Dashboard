@@ -1,11 +1,12 @@
 import type { Metadata } from 'next'
-import { Plus_Jakarta_Sans, Playfair_Display } from 'next/font/google'
+import { Poppins, Playfair_Display } from 'next/font/google'
 import './globals.css'
 import { Providers } from '@/components/Providers'
 
-const jakarta = Plus_Jakarta_Sans({
+const poppins = Poppins({
     subsets: ['latin'],
-    variable: '--font-jakarta',
+    weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
+    variable: '--font-poppins',
 })
 
 const playfair = Playfair_Display({
@@ -28,12 +29,11 @@ export default function RootLayout({
     children: React.ReactNode
 }) {
     return (
-        <html lang="en" suppressHydrationWarning className={`${jakarta.variable} ${playfair.variable}`}>
+        <html lang="en" suppressHydrationWarning className={`${poppins.variable} ${playfair.variable}`}>
             <head>
                 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
-                <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
             </head>
-            <body className={`${jakarta.className} bg-[#0a0a14] text-white selection:bg-[#fbbf24]/30 selection:text-white`}>
+            <body className={`${poppins.className} bg-[#0a0a14] text-white selection:bg-[#fbbf24]/30 selection:text-white`}>
                 <Providers>
                     {children}
                 </Providers>
