@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { UserSignOutButton } from '@/components/UserSignOutButton';
 import HistoryList from './HistoryList';
 import ContentManagement from './ContentManagement';
+import SettingsForm from '@/components/user/SettingsForm';
 import { getMyContent } from './actions';
 import { fetchPublicApi, fetchFromApi } from '@/lib/api';
 
@@ -36,7 +37,7 @@ export default async function UserDashboard({ searchParams }: { searchParams: { 
         ]);
 
         if (!profileRes.user) {
-            redirect('/login');
+            redirect('/auth/signin');
         }
 
         const apiUser = profileRes.user;
@@ -304,25 +305,42 @@ export default async function UserDashboard({ searchParams }: { searchParams: { 
 
                             {
                                 activeTab === 'settings' && (
-                                    <div className="bg-white/50 dark:bg-white/5 backdrop-blur-xl rounded-[40px] p-8 border border-slate-200/50 dark:border-white/5 animate-in fade-in duration-500 shadow-sm">
-                                        <h2 className="text-2xl font-bold mb-8 text-slate-900 dark:text-white uppercase tracking-tight">Account Preferences</h2>
-                                        <div className="space-y-8">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="bg-white/40 dark:bg-white/5 backdrop-blur-3xl rounded-[48px] p-8 md:p-12 border border-slate-200/50 dark:border-white/10 animate-in fade-in duration-500 shadow-2xl shadow-indigo-500/5">
+                                        <div className="mb-12">
+                                            <h2 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-2">Account Preferences</h2>
+                                            <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">Customize your experience and manage your data</p>
+                                        </div>
+
+                                        <div className="space-y-12">
+                                            {/* Basic Info (Read Only) */}
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pb-12 border-b border-slate-200/50 dark:border-white/5">
                                                 <div className="space-y-3">
-                                                    <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Full Name</label>
-                                                    <div className="px-5 py-4 bg-slate-100/50 dark:bg-white/5 rounded-2xl border border-slate-200/50 dark:border-white/5 text-slate-700 dark:text-slate-300 font-bold">{user.fullName}</div>
+                                                    <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest pl-2">Full Name</label>
+                                                    <div className="px-6 py-5 bg-slate-50 dark:bg-black/20 rounded-2xl border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white font-bold text-sm uppercase">{user.fullName}</div>
                                                 </div>
                                                 <div className="space-y-3">
-                                                    <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Email Address</label>
-                                                    <div className="px-5 py-4 bg-slate-100/50 dark:bg-white/5 rounded-2xl border border-slate-200/50 dark:border-white/5 text-slate-700 dark:text-slate-300 font-bold">{user.email}</div>
+                                                    <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest pl-2">Email Address</label>
+                                                    <div className="px-6 py-5 bg-slate-50 dark:bg-black/20 rounded-2xl border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white font-bold text-sm">{user.email}</div>
                                                 </div>
                                             </div>
-                                            <div className="p-6 bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 rounded-[32px]">
-                                                <h4 className="font-bold text-amber-600 dark:text-amber-500 mb-1 flex items-center gap-2">
-                                                    <Star className="w-4 h-4" /> Creator Tools
-                                                </h4>
-                                                <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">Manage your creator profile, analyze performance, and monetize your content with our premium studio features.</p>
-                                                <Link href="/u/dashboard?tab=content" className="mt-4 inline-block text-amber-600 dark:text-amber-500 text-xs font-black uppercase tracking-widest hover:underline">Open Creator Studio →</Link>
+
+                                            {/* Advanced Settings (Editable) */}
+                                            <SettingsForm user={user} />
+
+                                            {/* Creator CTA */}
+                                            <div className="p-8 bg-gradient-to-br from-amber-500/10 to-orange-600/10 border border-amber-500/20 rounded-[40px] relative overflow-hidden group">
+                                                <div className="absolute top-0 right-0 -mr-10 -mt-10 w-40 h-40 bg-white/5 blur-[80px] rounded-full group-hover:scale-150 transition-transform duration-1000" />
+                                                <div className="relative z-10 flex flex-col md:flex-row items-center gap-8 justify-between">
+                                                    <div className="text-center md:text-left">
+                                                        <h4 className="text-lg font-black text-amber-600 dark:text-amber-500 mb-2 flex items-center justify-center md:justify-start gap-2 uppercase tracking-tight">
+                                                            <Star className="w-6 h-6 fill-amber-500" /> Creator Tools
+                                                        </h4>
+                                                        <p className="text-sm text-slate-600 dark:text-slate-400 font-bold leading-relaxed max-w-md">Manage your creator profile, analyze performance, and monetize your content with our premium studio features.</p>
+                                                    </div>
+                                                    <Link href="/u/dashboard?tab=content" className="px-8 py-4 bg-amber-500 text-white text-xs font-black uppercase tracking-widest rounded-2xl hover:bg-slate-900 transition-all shadow-xl shadow-amber-500/20 whitespace-nowrap">
+                                                        Open Studio Studio →
+                                                    </Link>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

@@ -42,7 +42,8 @@ export default function UploadForm({ categories, type = 'REEL' }: UploadFormProp
         description: '',
         categoryId: categories[0]?.id || '',
         language: 'Hindi',
-        contentRating: 'U'
+        contentRating: 'U',
+        isFeatured: false
     });
 
     useEffect(() => {
@@ -169,7 +170,7 @@ export default function UploadForm({ categories, type = 'REEL' }: UploadFormProp
             formDataToSend.append('language', formData.language);
             formDataToSend.append('content_rating', formData.contentRating);
             formDataToSend.append('is_active', 'true');
-            formDataToSend.append('is_featured', 'false');
+            formDataToSend.append('is_featured', formData.isFeatured ? 'true' : 'false');
             formDataToSend.append('is_trending', 'false');
 
             const response = await uploadWithProgress(formDataToSend);
@@ -376,29 +377,23 @@ export default function UploadForm({ categories, type = 'REEL' }: UploadFormProp
                                 />
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Language</label>
+                            {/* {type === 'VIDEO' && (
+                                <div className="flex items-center gap-4 bg-white/50 dark:bg-black/40 p-6 rounded-2xl border border-slate-200 dark:border-white/10 group hover:border-indigo-500/50 transition-all cursor-pointer mt-6" onClick={() => handleChange('isFeatured', !formData.isFeatured)}>
+                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${formData.isFeatured ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-100 dark:bg-white/5 text-slate-400'}`}>
+                                        <Sparkles className="w-5 h-5" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-white">Feature on Home</p>
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Showcase this video in the primary Hero section</p>
+                                    </div>
                                     <input
-                                        value={formData.language}
-                                        onChange={(e) => handleChange('language', e.target.value)}
-                                        placeholder="e.g. Hindi, English"
-                                        className="w-full px-6 py-4 bg-white/50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-2xl focus:ring-2 focus:ring-indigo-600 outline-none transition-all text-sm font-bold uppercase"
+                                        type="checkbox"
+                                        checked={formData.isFeatured}
+                                        onChange={(e) => handleChange('isFeatured', e.target.checked)}
+                                        className="w-5 h-5 rounded-lg border-slate-300 text-indigo-600 focus:ring-indigo-600 cursor-pointer"
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Audience Rating</label>
-                                    <select
-                                        value={formData.contentRating}
-                                        onChange={(e) => handleChange('contentRating', e.target.value)}
-                                        className="w-full px-6 py-4 bg-white/50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-2xl outline-none text-sm font-bold uppercase cursor-pointer"
-                                    >
-                                        <option value="U" className="dark:bg-slate-900">U - All Ages</option>
-                                        <option value="UA" className="dark:bg-slate-900">UA - Parental Guidance</option>
-                                        <option value="A" className="dark:bg-slate-900">A - Adults Only</option>
-                                    </select>
-                                </div>
-                            </div>
+                            )} */}
                         </div>
 
                         <div className="flex justify-between pt-8">

@@ -33,3 +33,33 @@ export async function toggleVideoLike(videoId: number) {
         throw error;
     }
 }
+export async function toggleWatchlist(videoId: number) {
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session.user) {
+        throw new Error('Unauthorized');
+    }
+
+    try {
+        const { video } = await fetchFromApi(`/videos/${videoId}`);
+        const isInWatchlist = !!video.is_in_watchlist || !!video.in_watchlist;
+
+        if (isInWatchlist) {
+            await fetchFromApi(`/user/watchlist/${videoId}`, { method: 'DELETE' });
+            revalidatePath(`/watch/${videoId}`);
+            revalidatePath('/');
+            return { inWatchlist: false };
+        } else {
+            await fetchFromApi('/user/watchlist', {
+                method: 'POST',
+                body: JSON.stringify({ videoId })
+            });
+            revalidatePath(`/watch/${videoId}`);
+            revalidatePath('/');
+            return { inWatchlist: true };
+        }
+    } catch (error) {
+        console.error('toggleWatchlist Error:', error);
+        throw error;
+    }
+}

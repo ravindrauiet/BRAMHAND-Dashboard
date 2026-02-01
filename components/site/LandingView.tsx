@@ -1,9 +1,12 @@
 'use client';
 
-import { Play, TrendingUp, Clock, MoreVertical, Heart, Share2, Flame, ChevronRight, Compass, Music, Film, Tv, Plus } from 'lucide-react';
+import { Play, TrendingUp, Clock, MoreVertical, Heart, Share2, Flame, ChevronRight, Compass, Music, Film, Tv, Plus, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { toggleWatchlist } from '@/app/actions/video';
+import { useState } from 'react';
+import { Check } from 'lucide-react';
 
 interface LandingViewProps {
     featuredVideos: any[];
@@ -14,7 +17,21 @@ interface LandingViewProps {
 }
 
 export function LandingView({ featuredVideos, trendingVideos, latestVideos, seriesList, reelsVideos }: LandingViewProps) {
-    const heroVideo = featuredVideos[0];
+    const [heroVideo, setHeroVideo] = useState(featuredVideos[0]);
+    const [wishlistLoading, setWishlistLoading] = useState(false);
+
+    const handleWishlistToggle = async () => {
+        if (!heroVideo || wishlistLoading) return;
+        setWishlistLoading(true);
+        try {
+            const res = await toggleWatchlist(heroVideo.id);
+            setHeroVideo((prev: any) => ({ ...prev, is_in_watchlist: res.inWatchlist }));
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setWishlistLoading(false);
+        }
+    };
     // Helper to get valid image source
     const getThumbnail = (video: any) => {
         if (!video) return 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1974&auto=format&fit=crop';
@@ -99,9 +116,19 @@ export function LandingView({ featuredVideos, trendingVideos, latestVideos, seri
                                     <Play className="fill-black w-6 h-6" />
                                     START WATCHING
                                 </Link>
-                                <button className="flex h-14 min-w-[200px] items-center justify-center gap-3 rounded-2xl glassmorphism px-8 text-base font-bold text-white transition-all hover:bg-white/10 hover:border-white/30">
-                                    <Plus className="w-6 h-6" />
-                                    ADD TO LIST
+                                <button
+                                    onClick={handleWishlistToggle}
+                                    disabled={wishlistLoading}
+                                    className={`flex h-14 min-w-[220px] items-center justify-center gap-3 rounded-2xl glassmorphism px-8 text-base font-bold text-white transition-all hover:bg-white/10 hover:border-white/30 disabled:opacity-50 ${heroVideo.is_in_watchlist ? 'bg-white/10 border-white/40' : ''}`}
+                                >
+                                    {wishlistLoading ? (
+                                        <Loader2 className="w-6 h-6 animate-spin" />
+                                    ) : heroVideo.is_in_watchlist ? (
+                                        <Check className="w-6 h-6 text-[#fbbf24]" />
+                                    ) : (
+                                        <Plus className="w-6 h-6" />
+                                    )}
+                                    {heroVideo.is_in_watchlist ? 'IN YOUR LIST' : 'ADD TO LIST'}
                                 </button>
                             </div>
                         </motion.div>

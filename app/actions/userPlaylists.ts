@@ -29,8 +29,9 @@ export async function createPlaylist(formData: FormData) {
         revalidatePath('/u/playlists');
         revalidatePath('/u/dashboard');
         return { success: true };
-    } catch (error) {
-        return { error: 'Failed to create' };
+    } catch (error: any) {
+        console.error('Create Playlist Error:', error);
+        return { error: error.message || 'Failed to create' };
     }
 }
 
