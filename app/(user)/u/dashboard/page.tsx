@@ -3,14 +3,19 @@ import { redirect } from 'next/navigation';
 import { authOptions } from '@/lib/auth';
 import { PublicNavbar } from '@/components/site/PublicNavbar';
 import Image from 'next/image';
-import { LogOut, History, Heart, PlaySquare, Music, Film } from 'lucide-react';
+import {
+    LogOut, History, Heart, PlaySquare, Music, Film,
+    LayoutDashboard, Plus, Settings, ChevronRight,
+    TrendingUp, Star, Eye, Share2, PlusCircle, MoreVertical
+} from 'lucide-react';
 import Link from 'next/link';
 import { UserSignOutButton } from '@/components/UserSignOutButton';
+import HistoryList from './HistoryList';
 import ContentManagement from './ContentManagement';
 import { getMyContent } from './actions';
 import { fetchPublicApi, fetchFromApi } from '@/lib/api';
 
-export default async function UserDashboard() {
+export default async function UserDashboard({ searchParams }: { searchParams: { tab?: string } }) {
     const session = await getServerSession(authOptions);
 
     if (!session || (session as any).user.role === 'admin') {
@@ -18,37 +23,22 @@ export default async function UserDashboard() {
     }
 
     const userId = parseInt((session as any).user.id);
-    // userId is used for logs, but actual fetch depends on token
+    const activeTab = searchParams.tab || 'overview';
 
     // Fetch User Data, Content, and Categories via API
     try {
         const [profileRes, historyRes, videos, reels, categoriesData] = await Promise.all([
             fetchFromApi('/user/profile', { headers: { 'x-user-id': userId.toString() } }),
-            fetchFromApi('/user/history?limit=10', { headers: { 'x-user-id': userId.toString() } }),
+            fetchFromApi(`/user/history?limit=${activeTab === 'history' ? 50 : 10}`, { headers: { 'x-user-id': userId.toString() } }),
             getMyContent('VIDEO'),
             getMyContent('REEL'),
             fetchPublicApi('/videos/categories')
         ]);
 
-        // Check if user exists (checking profileRes.user explicitly)
         if (!profileRes.user) {
-            console.error('Dashboard Error: User profile fetch failed', profileRes);
-            return (
-                <div className="min-h-screen bg-slate-50 dark:bg-black flex items-center justify-center">
-                    <div className="text-center space-y-4">
-                        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">User Record Not Found</h1>
-                        <p className="text-slate-500 dark:text-slate-400">
-                            We could not retrieve your profile from the server.
-                        </p>
-                        <div className="flex justify-center">
-                            <UserSignOutButton />
-                        </div>
-                    </div>
-                </div>
-            );
+            redirect('/login');
         }
 
-        // Map API Data (snake_case) to Component State (camelCase)
         const apiUser = profileRes.user;
         const user = {
             id: apiUser.id,
@@ -58,25 +48,29 @@ export default async function UserDashboard() {
             mobileNumber: apiUser.mobile_number,
             isCreator: apiUser.is_creator,
             _count: {
-                videoLikes: apiUser._count?.videoLikes || 0,
-                songLikes: apiUser._count?.songLikes || 0,
+                totalLikes: apiUser._count?.total_likes || 0,
+                followers: apiUser._count?.followers || 0,
+                totalViews: apiUser._count?.total_views || 0,
                 playlists: apiUser._count?.playlists || 0
             },
             playlists: (apiUser.playlists || []).map((p: any) => ({
                 id: p.id,
                 name: p.name,
-                isPublic: p.is_public
+                isPublic: p.is_public || p.isPublic
             }))
         };
 
         const historyData = historyRes.history || [];
         const combinedHistory = historyData.map((item: any) => ({
-            id: item.id, // video id roughly maps here for key
+            id: item.view_id,
             createdAt: item.viewed_at,
+            lastPosition: item.last_position || 0,
             video: {
                 id: item.id,
                 title: item.title,
                 thumbnailUrl: item.thumbnail_url,
+                duration: item.duration || 0,
+                viewsCount: item.views_count || 0,
                 creator: {
                     fullName: item.creator_name || 'Unknown'
                 }
@@ -85,178 +79,275 @@ export default async function UserDashboard() {
 
         const categories = categoriesData.categories || [];
 
-        console.log('Dashboard Page - Data loaded:', {
-            userId: user.id,
-            videosCount: videos.length,
-            reelsCount: reels.length,
-            categoriesCount: categories.length
-        });
-
-        if (videos.length > 0) {
-            console.log('Dashboard Page - First video:', {
-                id: videos[0].id,
-                title: videos[0].title,
-                type: videos[0].type
-            });
-        }
+        // Dynamic greeting
+        const hour = new Date().getHours();
+        const greeting = hour < 12 ? 'Good Morning' : hour < 18 ? 'Good Afternoon' : 'Good Evening';
 
         return (
-            <div className="min-h-screen bg-slate-50 dark:bg-black">
+            <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0f] text-slate-900 dark:text-slate-100 selection:bg-indigo-500/30 transition-colors duration-500">
                 <PublicNavbar />
 
-                <div className="pt-24 pb-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <main className="pt-24 pb-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+                    {/* Background Glows */}
+                    <div className="absolute top-0 right-0 -z-10 w-[500px] h-[500px] bg-indigo-600/5 dark:bg-indigo-600/10 blur-[120px] rounded-full" />
+                    <div className="absolute bottom-0 left-0 -z-10 w-[500px] h-[500px] bg-purple-600/5 dark:bg-purple-600/10 blur-[120px] rounded-full" />
 
-                    {/* Profile Header */}
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 shadow-sm border border-slate-200 dark:border-slate-800 mb-8 flex flex-col md:flex-row items-center gap-8">
-                        <div className="w-32 h-32 rounded-full bg-slate-200 dark:bg-slate-800 relative overflow-hidden ring-4 ring-white dark:ring-slate-950 shadow-xl">
-                            {user.profileImage ? (
-                                <Image src={user.profileImage} alt={user.fullName} fill className="object-cover" />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-slate-400">
-                                    {user.fullName[0]}
-                                </div>
-                            )}
+                    {/* Header Section */}
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
+                        <div>
+                            <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 dark:from-white to-slate-500 dark:to-slate-400">
+                                {greeting}, {user.fullName.split(' ')[0]}
+                            </h1>
+                            <p className="text-slate-500 dark:text-slate-400 mt-2 flex items-center gap-2 font-medium">
+                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                {user.isCreator ? 'Creator Account' : 'Member Account'}
+                            </p>
                         </div>
 
-                        <div className="flex-1 text-center md:text-left space-y-2">
-                            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{user.fullName}</h1>
-                            <p className="text-slate-500 dark:text-slate-400">{user.email}</p>
-                            <div className="flex items-center justify-center md:justify-start gap-4 pt-2">
-                                <div className="px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm font-medium">
-                                    <span className="text-blue-600 font-bold">{(user._count?.videoLikes || 0) + (user._count?.songLikes || 0)}</span> Likes
-                                </div>
-                                <div className="px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm font-medium">
-                                    <span className="text-purple-600 font-bold">{user._count?.playlists || 0}</span> Playlists
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="flex gap-4">
+                        <div className="flex items-center gap-3">
                             {(user.isCreator || (session as any).user.role === 'admin') && (
                                 <>
                                     <Link
                                         href="/u/upload-video"
-                                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl font-bold flex items-center gap-2 transition-colors"
+                                        className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-indigo-600/20 active:scale-95 text-xs uppercase tracking-widest"
                                     >
-                                        <Film className="w-5 h-5" />
-                                        Upload Video
+                                        <Film className="w-4 h-4" />
+                                        Post Video
                                     </Link>
                                     <Link
                                         href="/u/upload-reel"
-                                        className="bg-pink-600 hover:bg-pink-700 text-white px-6 py-2 rounded-xl font-bold flex items-center gap-2 transition-colors"
+                                        className="px-5 py-2.5 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-pink-600/20 active:scale-95 text-xs uppercase tracking-widest"
                                     >
-                                        <PlaySquare className="w-5 h-5" />
-                                        Upload Reel
+                                        <PlaySquare className="w-4 h-4" />
+                                        Post Reel
                                     </Link>
                                 </>
                             )}
+                            <div className="h-10 w-px bg-slate-200 dark:bg-white/10 mx-1" />
                             <UserSignOutButton />
                         </div>
                     </div>
 
-                    {/* Content Management Section */}
-                    <div className="mb-8">
-                        <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">My Content</h2>
-                        <ContentManagement videos={videos} reels={reels} categories={categories} />
+                    {/* High-Level Stats Cards */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+                        {[
+                            { label: 'Total Likes', value: user._count?.totalLikes || 0, icon: Heart, color: 'text-pink-500', bg: 'bg-pink-500/10' },
+                            { label: 'Followers', value: user._count?.followers || 0, icon: Star, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+                            { label: 'Total Views', value: user._count?.totalViews || 0, icon: Eye, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+                            { label: 'Playlists', value: user._count?.playlists || 0, icon: PlaySquare, color: 'text-indigo-500', bg: 'bg-indigo-500/10' }
+                        ].map((stat, i) => (
+                            <div key={i} className="bg-white/70 dark:bg-white/5 backdrop-blur-xl p-5 rounded-2xl border border-slate-200/60 dark:border-white/10 hover:border-indigo-500/30 transition-all duration-300 group shadow-sm hover:shadow-md">
+                                <div className={`w-10 h-10 ${stat.bg} ${stat.color} rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 transition-transform`}>
+                                    <stat.icon className="w-5 h-5" />
+                                </div>
+                                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider mb-0.5">{stat.label}</p>
+                                <p className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">{stat.value}</p>
+                            </div>
+                        ))}
                     </div>
 
-                    {/* Dashboard Grid */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-                        {/* Watch History */}
-                        <div className="lg:col-span-2 space-y-6">
-                            <div className="flex items-center justify-between">
-                                <h2 className="text-xl font-bold flex items-center gap-2 text-slate-900 dark:text-white">
-                                    <History className="w-5 h-5 text-blue-500" />
-                                    Watch History
-                                </h2>
-                                <Link href="/u/history" className="text-sm text-blue-600 hover:underline">View All</Link>
-                            </div>
-
-                            <div className="space-y-4">
-                                {combinedHistory.map((view: any) => (
-                                    <Link href={`/watch/${view.video.id}`} key={view.id} className="flex gap-4 p-4 bg-white dark:bg-slate-900 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-700">
-                                        <div className="relative w-40 aspect-video rounded-lg overflow-hidden bg-slate-800 flex-shrink-0">
-                                            <Image
-                                                src={view.video.thumbnailUrl || '/placeholder-thumb.jpg'}
-                                                alt={view.video.title}
-                                                fill
-                                                className="object-cover"
-                                            />
-                                        </div>
-                                        <div className="flex-1 min-w-0 py-1">
-                                            <h3 className="font-semibold text-slate-900 dark:text-white line-clamp-1">{view.video.title}</h3>
-                                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{view.video.creator.fullName}</p>
-                                            <p className="text-xs text-slate-400 mt-2">Watched {new Date(view.createdAt).toLocaleDateString()}</p>
-                                        </div>
-                                    </Link>
-                                ))}
-                                {combinedHistory.length === 0 && (
-                                    <div className="text-center py-12 text-slate-500">
-                                        No watch history yet. Start streaming!
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Sidebar Stats / Playlists */}
-                        <div className="space-y-8">
-                            <div className="bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl p-6 text-white shadow-lg">
-                                <h3 className="font-bold text-lg mb-2">Listen to ad-free music</h3>
-                                <p className="text-blue-100 text-sm mb-4">Upgrade to Premium to unlock offline playback and high quality audio.</p>
-                                <button className="w-full py-2 bg-white text-blue-600 font-bold rounded-lg hover:bg-blue-50 transition-colors">
-                                    Go Premium
-                                </button>
-                            </div>
-
-                            <div>
-                                <div className="flex justify-between items-center mb-4">
-                                    <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                        <PlaySquare className="w-5 h-5 text-green-500" />
-                                        My Playlists
-                                    </h3>
-                                    <Link href="/u/playlists" className="text-sm text-blue-600 hover:underline">Manage</Link>
+                    {/* Tab Navigation */}
+                    <div className="flex flex-col lg:flex-row gap-8">
+                        {/* Sidebar Menu */}
+                        <div className="lg:w-64 flex-shrink-0">
+                            <nav className="bg-white/50 dark:bg-white/5 backdrop-blur-xl rounded-3xl p-3 border border-slate-200/50 dark:border-white/5 sticky top-28 shadow-sm">
+                                <div className="space-y-1">
+                                    {[
+                                        { id: 'overview', icon: LayoutDashboard, label: 'Overview' },
+                                        { id: 'content', icon: Film, label: 'My Content', hide: !user.isCreator },
+                                        { id: 'history', icon: History, label: 'Watch History' },
+                                        { id: 'playlists', icon: PlaySquare, label: 'Playlists' },
+                                        { id: 'settings', icon: Settings, label: 'Preferences' },
+                                    ].map((item) => (
+                                        !item.hide && (
+                                            <Link
+                                                key={item.id}
+                                                href={`/u/dashboard?tab=${item.id}`}
+                                                className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl transition-all group ${activeTab === item.id
+                                                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
+                                                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
+                                                    }`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <item.icon className={`w-5 h-5 ${activeTab === item.id ? 'text-white' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
+                                                    <span className="font-bold text-sm uppercase tracking-tight">{item.label}</span>
+                                                </div>
+                                                {activeTab === item.id && <ChevronRight className="w-4 h-4 text-white/70" />}
+                                            </Link>
+                                        )
+                                    ))}
                                 </div>
 
-                                {user.playlists?.length > 0 ? (
-                                    <div className="space-y-3">
-                                        {user.playlists.map((p: any) => (
-                                            <div key={p.id} className="flex gap-3 p-3 bg-white dark:bg-slate-900 rounded-lg border border-slate-100 dark:border-slate-800">
-                                                <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded flex items-center justify-center">
-                                                    <Music className="w-6 h-6 text-slate-400" />
-                                                </div>
-                                                <div>
-                                                    <h4 className="font-semibold text-sm line-clamp-1">{p.name}</h4>
-                                                    <p className="text-xs text-slate-500">{p.isPublic ? 'Public' : 'Private'}</p>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="p-4 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl text-center text-slate-500">
-                                        <p className="text-sm">Create your first playlist</p>
-                                        <Link href="/u/playlists" className="text-blue-600 text-xs font-medium mt-1 inline-block">Create Now</Link>
-                                    </div>
-                                )}
-                            </div>
+                                {/* Premium CTA */}
+                                <div className="mt-6 p-4 bg-gradient-to-br from-indigo-600/20 to-purple-600/20 rounded-2xl border border-indigo-500/20 relative overflow-hidden group">
+                                    <div className="absolute top-0 right-0 -mr-4 -mt-4 w-16 h-16 bg-white/5 blur-2xl rounded-full" />
+                                    <h4 className="text-sm font-bold text-white mb-1">Upgrade to Premium</h4>
+                                    <p className="text-[10px] text-slate-400 mb-3">Ad-free music & higher quality video streaming.</p>
+                                    <button className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition-colors shadow-lg shadow-indigo-600/40">
+                                        Get Premium
+                                    </button>
+                                </div>
+                            </nav>
                         </div>
 
-                    </div>
-                </div>
-            </div>
+                        {/* Tab Content */}
+                        <div className="flex-1 min-w-0">
+                            {activeTab === 'overview' && (
+                                <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                                    {/* Recent History Subsection */}
+                                    <section>
+                                        <div className="flex items-center justify-between mb-6">
+                                            <h2 className="text-xl font-bold flex items-center gap-2 text-slate-900 dark:text-white">
+                                                <History className="w-5 h-5 text-indigo-500" />
+                                                Recent History
+                                            </h2>
+                                            <Link href="/u/dashboard?tab=history" className="text-sm text-indigo-500 hover:text-indigo-600 font-bold uppercase tracking-wider">Detailed History →</Link>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {combinedHistory.slice(0, 4).map((view: any) => (
+                                                <Link
+                                                    href={`/watch/${view.video.id}`}
+                                                    key={view.id}
+                                                    className="bg-white/50 dark:bg-white/5 backdrop-blur-xl flex gap-4 p-4 rounded-2xl hover:bg-white dark:hover:bg-white/10 transition-all border border-slate-200/50 dark:border-white/5 hover:border-indigo-500/20 group shadow-sm"
+                                                >
+                                                    <div className="relative w-32 aspect-video rounded-xl overflow-hidden bg-slate-200 dark:bg-slate-800 flex-shrink-0">
+                                                        <Image
+                                                            src={view.video.thumbnailUrl || '/placeholder-thumb.jpg'}
+                                                            alt={view.video.title}
+                                                            fill
+                                                            className="object-cover group-hover:scale-110 transition-transform duration-500"
+                                                        />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                                        <h3 className="font-bold text-slate-900 dark:text-white line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors uppercase tracking-tight text-sm">{view.video.title}</h3>
+                                                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">{view.video.creator.fullName}</p>
+                                                        <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-3 font-bold uppercase tracking-widest">{new Date(view.createdAt).toLocaleDateString()}</p>
+                                                    </div>
+                                                </Link>
+                                            ))}
+                                            {combinedHistory.length === 0 && (
+                                                <div className="col-span-full py-16 bg-white/30 dark:bg-white/5 backdrop-blur-xl rounded-[32px] text-center text-slate-400 dark:text-slate-500 border border-dashed border-slate-200 dark:border-white/10">
+                                                    <History className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                                                    <p className="font-medium">No watch history yet. Start exploring!</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </section>
+
+                                    {/* Quick Upload Stats for Creator Account */}
+                                    {user.isCreator && (
+                                        <section className="bg-white/50 dark:bg-white/5 backdrop-blur-xl p-8 rounded-[32px] border border-slate-200/50 dark:border-white/5 relative overflow-hidden border-l-4 border-indigo-500 shadow-sm">
+                                            <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8">
+                                                <div className="text-center md:text-left">
+                                                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2 uppercase tracking-tight">Content Performance</h2>
+                                                    <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">You have uploaded {videos.length} videos and {reels.length} reels this month.</p>
+                                                </div>
+                                                <div className="flex gap-4">
+                                                    <div className="text-center bg-white dark:bg-white/5 px-6 py-3 rounded-2xl border border-slate-200 dark:border-white/5">
+                                                        <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-black tracking-widest mb-1">Status</p>
+                                                        <p className="text-xl font-black text-emerald-500 dark:text-emerald-400 flex items-center justify-center gap-1 group">
+                                                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                                            Live
+                                                        </p>
+                                                    </div>
+                                                    <Link href="/u/dashboard?tab=content" className="bg-slate-900 dark:bg-white text-white dark:text-black px-6 py-3 rounded-2xl font-bold text-sm flex items-center gap-2 hover:opacity-90 transition-all shadow-xl shadow-slate-900/10 dark:shadow-none">
+                                                        Creator Studio
+                                                        <ChevronRight className="w-4 h-4" />
+                                                    </Link>
+                                                </div>
+                                            </div>
+                                        </section>
+                                    )}
+                                </div>
+                            )}
+
+                            {activeTab === 'content' && (
+                                <div className="animate-in fade-in slide-in-from-right-4 duration-500">
+                                    <ContentManagement videos={videos} reels={reels} categories={categories} />
+                                </div>
+                            )}
+
+                            {activeTab === 'history' && (
+                                <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+                                    <div className="flex items-center justify-between mb-8 px-2">
+                                        <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Watch History</h2>
+                                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{combinedHistory.length} Items</div>
+                                    </div>
+                                    <HistoryList initialHistory={combinedHistory} />
+                                </div>
+                            )}
+
+
+                            {
+                                activeTab === 'playlists' && (
+                                    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+                                        <div className="flex items-center justify-between">
+                                            <h2 className="text-2xl font-bold text-slate-900 dark:text-white uppercase tracking-tight">My Playlists</h2>
+                                            <Link href="/u/playlists" className="px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-black rounded-xl text-xs font-black flex items-center gap-2 transition-all uppercase tracking-widest shadow-xl shadow-slate-900/10 dark:shadow-none">
+                                                <Plus className="w-4 h-4" /> New Collection
+                                            </Link>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                            {user.playlists.map((p: any) => (
+                                                <div key={p.id} className="bg-white/50 dark:bg-white/5 backdrop-blur-xl group p-6 rounded-[40px] border border-slate-200/50 dark:border-white/5 hover:border-indigo-500/20 transition-all cursor-pointer shadow-sm">
+                                                    <div className="w-full aspect-square bg-gradient-to-br from-indigo-600/10 to-purple-600/10 dark:from-indigo-600/20 dark:to-purple-600/20 rounded-[32px] flex items-center justify-center mb-6 ring-1 ring-slate-200 dark:ring-white/5 group-hover:scale-95 transition-transform duration-500">
+                                                        <Music className="w-16 h-16 text-indigo-600 dark:text-indigo-400 group-hover:rotate-12 transition-transform" />
+                                                    </div>
+                                                    <h4 className="font-bold text-lg text-slate-900 dark:text-white mb-1 uppercase tracking-tight">{p.name}</h4>
+                                                    <p className="text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-widest">{p.isPublic ? 'Public Collection' : 'Private Collection'}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )
+                            }
+
+                            {
+                                activeTab === 'settings' && (
+                                    <div className="bg-white/50 dark:bg-white/5 backdrop-blur-xl rounded-[40px] p-8 border border-slate-200/50 dark:border-white/5 animate-in fade-in duration-500 shadow-sm">
+                                        <h2 className="text-2xl font-bold mb-8 text-slate-900 dark:text-white uppercase tracking-tight">Account Preferences</h2>
+                                        <div className="space-y-8">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                                <div className="space-y-3">
+                                                    <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Full Name</label>
+                                                    <div className="px-5 py-4 bg-slate-100/50 dark:bg-white/5 rounded-2xl border border-slate-200/50 dark:border-white/5 text-slate-700 dark:text-slate-300 font-bold">{user.fullName}</div>
+                                                </div>
+                                                <div className="space-y-3">
+                                                    <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Email Address</label>
+                                                    <div className="px-5 py-4 bg-slate-100/50 dark:bg-white/5 rounded-2xl border border-slate-200/50 dark:border-white/5 text-slate-700 dark:text-slate-300 font-bold">{user.email}</div>
+                                                </div>
+                                            </div>
+                                            <div className="p-6 bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 rounded-[32px]">
+                                                <h4 className="font-bold text-amber-600 dark:text-amber-500 mb-1 flex items-center gap-2">
+                                                    <Star className="w-4 h-4" /> Creator Tools
+                                                </h4>
+                                                <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">Manage your creator profile, analyze performance, and monetize your content with our premium studio features.</p>
+                                                <Link href="/u/dashboard?tab=content" className="mt-4 inline-block text-amber-600 dark:text-amber-500 text-xs font-black uppercase tracking-widest hover:underline">Open Creator Studio →</Link>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )
+                            }
+                        </div >
+                    </div >
+                </main >
+            </div >
         );
 
     } catch (error) {
         console.error('Dashboard Load Error:', error);
         return (
-            <div className="min-h-screen bg-slate-50 dark:bg-black flex items-center justify-center">
-                <div className="text-center space-y-4">
-                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Something went wrong</h1>
-                    <p className="text-slate-500 dark:text-slate-400">
-                        We encountered an error loading your dashboard. Please try again later.
+            <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center p-4">
+                <div className="glassmorphism p-10 rounded-[40px] border border-white/10 text-center max-w-lg">
+                    <div className="w-20 h-20 bg-rose-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <Star className="w-10 h-10 text-rose-500 rotate-45" />
+                    </div>
+                    <h1 className="text-2xl font-bold text-white mb-4">Dashboard Sync Issue</h1>
+                    <p className="text-slate-400 mb-8 leading-relaxed">
+                        We were unable to securely sync your account details with the media servers. Please check your network or try re-authenticating.
                     </p>
-                    <div className="flex justify-center gap-4">
-                        <Link href="/" className="text-blue-600 hover:underline">Go Home</Link>
+                    <div className="flex flex-col sm:flex-row gap-4">
+                        <Link href="/" className="flex-1 py-4 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-bold transition-all border border-white/10">Go Home</Link>
                         <UserSignOutButton />
                     </div>
                 </div>

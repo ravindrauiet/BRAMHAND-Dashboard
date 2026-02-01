@@ -1,19 +1,16 @@
 'use server';
 
-import { db } from '@/lib/db';
+import { fetchFromApi, fetchPublicApi } from '@/lib/api';
 import { revalidatePath } from 'next/cache';
 
 export async function getPlaylists() {
     try {
-        const playlists = await db.playlist.findMany({
-            include: {
-                user: true,
-                _count: {
-                    select: { songs: true }
-                }
-            },
-            orderBy: { createdAt: 'desc' }
-        });
+        // Fetch from API
+        const response = await fetchPublicApi('/music/playlists');
+        const playlists = response.playlists || [];
+
+        // Note: API needs to be updated to include user/counts 
+        // to match previous Prisma include.
         return { playlists };
     } catch (error) {
         return { error: 'Failed to fetch playlists' };
@@ -22,9 +19,7 @@ export async function getPlaylists() {
 
 export async function deletePlaylist(id: number) {
     try {
-        await db.playlist.delete({
-            where: { id }
-        });
+        await fetchFromApi(`/music/playlists/${id}`, { method: 'DELETE' });
         revalidatePath('/dashboard/songs/playlists');
         return { success: true };
     } catch (error) {

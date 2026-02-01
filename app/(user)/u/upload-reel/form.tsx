@@ -203,145 +203,97 @@ export default function UploadForm({ categories, type = 'REEL' }: UploadFormProp
     };
 
     return (
-        <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 animate-in fade-in duration-300">
             {/* Error Display */}
             {error && (
-                <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/20 rounded-xl p-4 flex items-start gap-3">
-                    <X className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                    <div className="flex-1">
-                        <p className="text-sm font-medium text-red-800 dark:text-red-200">{error}</p>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={() => setError(null)}
-                        className="text-red-500 hover:text-red-700"
-                    >
-                        <X className="w-4 h-4" />
-                    </button>
+                <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3 flex items-center gap-2 text-rose-500 text-xs font-bold">
+                    <X className="w-4 h-4" />
+                    <p className="flex-1">{error}</p>
+                    <button type="button" onClick={() => setError(null)}><X className="w-3 h-3" /></button>
                 </div>
             )}
 
             {/* Upload Progress */}
             {isUploading && uploadProgress && (
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 border border-blue-200 dark:border-blue-900/20 rounded-xl p- space-y-4">
+                <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 space-y-3">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
-                                <Upload className="w-5 h-5 text-white animate-pulse" />
+                            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
+                                <Upload className="w-4 h-4 text-white animate-pulse" />
                             </div>
                             <div>
-                                <h3 className="font-semibold text-slate-900 dark:text-white">Uploading {type === 'REEL' ? 'Reel' : 'Video'}...</h3>
-                                <p className="text-sm text-slate-500 dark:text-slate-400">
+                                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-tight">Uploading...</h3>
+                                <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
                                     {formatBytes(uploadProgress.uploadedBytes)} / {formatBytes(uploadProgress.totalBytes)}
                                 </p>
                             </div>
                         </div>
-                        <button
-                            type="button"
-                            onClick={handleCancelUpload}
-                            className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-                        >
-                            <X className="w-4 h-4" />
-                            Cancel
-                        </button>
+                        <button onClick={handleCancelUpload} className="text-[10px] font-bold text-rose-500 uppercase hover:underline">Cancel</button>
                     </div>
-
-                    <div className="space-y-2">
-                        <div className="flex items-center justify-between text-sm">
-                            <span className="font-semibold text-blue-600 dark:text-blue-400">
-                                {uploadProgress.percentage}%
-                            </span>
-                            <span className="text-slate-500 dark:text-slate-400">
-                                {formatBytes(uploadProgress.speed)}/s • {formatTime(uploadProgress.estimatedTimeRemaining)} remaining
-                            </span>
-                        </div>
-                        <div className="w-full h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                            <div
-                                className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-300 ease-out rounded-full"
-                                style={{ width: `${uploadProgress.percentage}%` }}
-                            />
-                        </div>
+                    <div className="w-full h-1.5 bg-slate-200 dark:bg-white/5 rounded-full overflow-hidden">
+                        <div className="h-full bg-indigo-600 transition-all duration-300" style={{ width: `${uploadProgress.percentage}%` }} />
                     </div>
                 </div>
             )}
 
-            <div className="space-y-4">
+            <div className="space-y-5 text-left">
                 {/* Title */}
-                <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                        {type === 'REEL' ? 'Caption' : 'Title'}
+                <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
+                        {type === 'REEL' ? 'Caption' : 'Video Title'}
                     </label>
                     <input
                         name="title"
                         value={formData.title}
                         onChange={(e) => handleChange('title', e.target.value)}
                         required
-                        placeholder={type === 'REEL' ? 'My awesome reel #fun' : 'Enter video title...'}
-                        className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                        placeholder="Enter title..."
+                        className="w-full px-4 py-3 bg-white dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl focus:ring-1 focus:ring-indigo-500 outline-none transition-all text-sm font-medium"
                     />
                 </div>
 
-                {/* Video File */}
-                <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-2">
-                        <Film className="w-4 h-4 text-pink-500" />
-                        {type === 'REEL' ? 'Reel Video File' : 'Video File'}
-                    </label>
-                    <input
-                        type="file"
-                        accept="video/*"
-                        required
-                        onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                                setVideoFile(file);
-                            }
-                        }}
-                        className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pink-50 file:text-pink-700 hover:file:bg-pink-100"
-                    />
-                </div>
-
-                {/* Thumbnail */}
-                <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-2">
-                        <ImageIcon className="w-4 h-4 text-amber-500" />
-                        Thumbnail (Optional)
-                    </label>
-                    <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                                setThumbnailFile(file);
-                                const url = URL.createObjectURL(file);
-                                setThumbnailPreview(url);
-                            }
-                        }}
-                        className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100"
-                    />
-                    {thumbnailPreview && (
-                        <div className="mt-3 relative w-full aspect-video rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800">
-                            <Image src={thumbnailPreview} alt="Thumbnail preview" fill className="object-cover" />
+                {/* File Pickers */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">Video File</label>
+                        <div className="relative border border-dashed border-slate-200 dark:border-white/10 rounded-xl p-6 text-center hover:border-indigo-500 transition-all group overflow-hidden bg-slate-50/50 dark:bg-white/2">
+                            <input type="file" accept="video/*" required onChange={(e) => setVideoFile(e.target.files?.[0] || null)} className="absolute inset-0 opacity-0 cursor-pointer" />
+                            <Film className="w-6 h-6 mx-auto mb-2 text-slate-300 dark:text-slate-600" />
+                            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tighter truncate max-w-full">
+                                {videoFile ? videoFile.name : 'Select Video'}
+                            </p>
                         </div>
-                    )}
+                    </div>
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">Thumbnail</label>
+                        <div className="relative border border-dashed border-slate-200 dark:border-white/10 rounded-xl p-1 text-center hover:border-indigo-500 transition-all min-h-[92px] flex items-center justify-center bg-slate-50/50 dark:bg-white/2">
+                            <input type="file" accept="image/*" onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) { setThumbnailFile(file); setThumbnailPreview(URL.createObjectURL(file)); }
+                            }} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
+                            {thumbnailPreview ? (
+                                <Image src={thumbnailPreview} alt="Preview" fill className="object-cover rounded-lg" />
+                            ) : (
+                                <div className="space-y-1">
+                                    <ImageIcon className="w-6 h-6 mx-auto text-slate-300 dark:text-slate-600" />
+                                    <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tighter">Add Art</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
 
-                {/* Category */}
-                <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                        Category
-                    </label>
+                {/* Categories */}
+                <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">Category</label>
                     <select
                         name="categoryId"
                         value={formData.categoryId}
                         onChange={(e) => handleChange('categoryId', e.target.value)}
                         required
-                        className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none appearance-none"
+                        className="w-full px-4 py-3 bg-white dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl outline-none text-sm font-medium cursor-pointer"
                     >
-                        {categories.map(c => (
-                            <option key={c.id} value={c.id}>{c.name}</option>
-                        ))}
+                        {categories.map(c => <option key={c.id} value={c.id} className="dark:bg-slate-900">{c.name}</option>)}
                     </select>
                 </div>
             </div>
@@ -349,10 +301,10 @@ export default function UploadForm({ categories, type = 'REEL' }: UploadFormProp
             <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-xl font-bold text-lg hover:shadow-lg hover:shadow-pink-500/25 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                className="w-full py-3.5 bg-indigo-600 text-white rounded-xl font-bold text-[11px] uppercase tracking-[0.2em] hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/20 disabled:opacity-50 flex items-center justify-center gap-2"
             >
-                {isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Upload className="w-6 h-6" />}
-                {isLoading ? 'Uploading...' : `Upload ${type === 'REEL' ? 'Reel' : 'Video'}`}
+                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                {isLoading ? 'Processing...' : `Submit ${type}`}
             </button>
         </form>
     );

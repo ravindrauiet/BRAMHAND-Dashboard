@@ -1,13 +1,19 @@
 'use server';
 
-import { db } from '@/lib/db';
+import { fetchFromApi, fetchPublicApi } from '@/lib/api';
 import { revalidatePath } from 'next/cache';
 
 export async function getSocialStats(userId: number) {
     try {
-        const followersCount = await db.follows.count({ where: { followingId: userId } });
-        const followingCount = await db.follows.count({ where: { followerId: userId } });
-        return { followersCount, followingCount };
+        const [followersRes, followingRes] = await Promise.all([
+            fetchPublicApi(`/user/${userId}/followers`),
+            fetchPublicApi(`/user/${userId}/following`)
+        ]);
+
+        return {
+            followersCount: followersRes.followers?.length || 0,
+            followingCount: followingRes.following?.length || 0
+        };
     } catch (error) {
         return { error: 'Failed' };
     }
@@ -15,11 +21,8 @@ export async function getSocialStats(userId: number) {
 
 export async function getFollowers(userId: number) {
     try {
-        const followers = await db.follows.findMany({
-            where: { followingId: userId },
-            include: { follower: true }
-        });
-        return { followers: followers.map(f => f.follower) };
+        const response = await fetchPublicApi(`/user/${userId}/followers`);
+        return { followers: response.followers || [] };
     } catch (error) {
         return { error: 'Failed' };
     }
@@ -27,11 +30,8 @@ export async function getFollowers(userId: number) {
 
 export async function getFollowing(userId: number) {
     try {
-        const following = await db.follows.findMany({
-            where: { followerId: userId },
-            include: { following: true }
-        });
-        return { following: following.map(f => f.following) };
+        const response = await fetchPublicApi(`/user/${userId}/following`);
+        return { following: response.following || [] };
     } catch (error) {
         return { error: 'Failed' };
     }

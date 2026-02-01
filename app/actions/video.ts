@@ -1,6 +1,6 @@
 'use server';
 
-import { db } from '@/lib/db';
+import { fetchFromApi } from '@/lib/api';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
@@ -12,50 +12,24 @@ export async function toggleVideoLike(videoId: number) {
         throw new Error('Unauthorized');
     }
 
-    const userId = parseInt((session.user as any).id);
+    try {
+        // 1. Get current like status from API
+        const { video } = await fetchFromApi(`/videos/${videoId}`);
+        const currentlyLiked = !!video.is_liked;
 
-    const existingLike = await db.videoLike.findUnique({
-        where: {
-            userId_videoId: {
-                userId,
-                videoId
-            }
+        if (currentlyLiked) {
+            // 2. Unlike via API
+            await fetchFromApi(`/videos/${videoId}/like`, { method: 'DELETE' });
+            revalidatePath(`/watch/${videoId}`);
+            return { isLiked: false };
+        } else {
+            // 2. Like via API
+            await fetchFromApi(`/videos/${videoId}/like`, { method: 'POST' });
+            revalidatePath(`/watch/${videoId}`);
+            return { isLiked: true };
         }
-    });
-
-    if (existingLike) {
-        // Unlike
-        await db.videoLike.delete({
-            where: {
-                userId_videoId: {
-                    userId,
-                    videoId
-                }
-            }
-        });
-
-        await db.video.update({
-            where: { id: videoId },
-            data: { likesCount: { decrement: 1 } }
-        });
-
-        revalidatePath(`/watch/${videoId}`);
-        return { isLiked: false };
-    } else {
-        // Like
-        await db.videoLike.create({
-            data: {
-                userId,
-                videoId
-            }
-        });
-
-        await db.video.update({
-            where: { id: videoId },
-            data: { likesCount: { increment: 1 } }
-        });
-
-        revalidatePath(`/watch/${videoId}`);
-        return { isLiked: true };
+    } catch (error) {
+        console.error('toggleVideoLike API Error:', error);
+        throw error;
     }
 }

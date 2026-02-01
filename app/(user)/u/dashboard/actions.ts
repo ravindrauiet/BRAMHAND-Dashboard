@@ -79,3 +79,17 @@ export async function deleteVideo(id: number) {
     }
 }
 
+export async function removeFromHistory(viewId: number) {
+    try {
+        await fetchFromApi(`/user/history/${viewId}`, {
+            method: 'DELETE'
+        });
+
+        revalidatePath('/u/dashboard');
+        return { success: true };
+    } catch (error: any) {
+        console.error('Remove from history error:', error);
+        return { success: false, error: error.message };
+    }
+}
+

@@ -1,17 +1,18 @@
-import { fetchPublicApi } from '@/lib/api';
+import { fetchPublicApi, fetchFromApi } from '@/lib/api';
 import { PublicNavbar } from '@/components/site/PublicNavbar';
 import { notFound } from 'next/navigation';
 import { VideoInteractions } from '@/components/site/VideoInteractions';
 import { CommentsSection } from './CommentsSection';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Play, Share2, MoreVertical, Layers, ChevronRight } from 'lucide-react';
+import { Share2, MoreVertical, Layers, ChevronRight } from 'lucide-react';
+import { VideoPlayer } from '@/components/site/VideoPlayer';
 
 export default async function WatchPage({ params }: { params: { id: string } }) {
     const videoId = params.id;
 
-    // 1. Fetch Video Data
-    const videoRes = await fetchPublicApi(`/videos/${videoId}`);
+    // 1. Fetch Video Data (Using fetchFromApi to get user-specific state like last_position)
+    const videoRes = await fetchFromApi(`/videos/${videoId}`);
 
     if (!videoRes || !videoRes.video) {
         return notFound();
@@ -36,10 +37,6 @@ export default async function WatchPage({ params }: { params: { id: string } }) 
         sidebarData = relatedRes?.videos?.filter((v: any) => v.id !== video.id) || [];
     }
 
-    // record view (fire and forget in server component is tricky, ideally client side effect, 
-    // but here we can just let the implicit "get" view count logic handle it if backend does it, 
-    // or rely on client side useEffect. For now, assuming standard fetch is okay)
-
     const formatDuration = (seconds?: number | null) => {
         if (!seconds) return '';
         if (seconds < 60) return `0:${seconds.toString().padStart(2, '0')}`;
@@ -56,12 +53,11 @@ export default async function WatchPage({ params }: { params: { id: string } }) 
             <div className="w-full bg-black">
                 <div className="max-w-[1800px] mx-auto pt-16">
                     <div className="relative aspect-video w-full max-h-[85vh] bg-black shadow-2xl">
-                        <video
-                            src={video.video_url || video.videoUrl}
-                            poster={video.thumbnail_url || video.thumbnailUrl}
-                            controls
-                            className="w-full h-full object-contain"
-                            autoPlay
+                        <VideoPlayer
+                            videoId={video.id}
+                            videoUrl={video.video_url || video.videoUrl}
+                            thumbnailUrl={video.thumbnail_url || video.thumbnailUrl}
+                            initialTime={video.last_position || 0}
                         />
                     </div>
                 </div>
