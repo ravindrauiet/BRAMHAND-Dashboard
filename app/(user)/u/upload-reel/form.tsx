@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { Loader2, Upload, X, Film, Image as ImageIcon, Sparkles } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Loader2, Upload, X, Film, Image as ImageIcon, Sparkles, CheckCircle2, ChevronRight, ChevronLeft, AlertCircle } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -19,24 +19,39 @@ interface UploadFormProps {
     type?: 'VIDEO' | 'REEL';
 }
 
+type Step = 'FILE' | 'DETAILS' | 'PREVIEW';
+
 export default function UploadForm({ categories, type = 'REEL' }: UploadFormProps) {
     const router = useRouter();
     const { data: session } = useSession();
     const uploadAbortController = useRef<AbortController | null>(null);
 
+    const [currentStep, setCurrentStep] = useState<Step>('FILE');
     const [isLoading, setIsLoading] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     const [videoFile, setVideoFile] = useState<File | null>(null);
+    const [videoPreview, setVideoPreview] = useState<string>('');
     const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
     const [thumbnailPreview, setThumbnailPreview] = useState<string>('');
 
     const [formData, setFormData] = useState({
         title: '',
+        description: '',
         categoryId: categories[0]?.id || '',
+        language: 'Hindi',
+        contentRating: 'U'
     });
+
+    useEffect(() => {
+        if (videoFile) {
+            const url = URL.createObjectURL(videoFile);
+            setVideoPreview(url);
+            return () => URL.revokeObjectURL(url);
+        }
+    }, [videoFile]);
 
     const handleChange = (field: string, value: any) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -48,14 +63,6 @@ export default function UploadForm({ categories, type = 'REEL' }: UploadFormProp
         const sizes = ['Bytes', 'KB', 'MB', 'GB'];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
         return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-    };
-
-    const formatTime = (seconds: number): string => {
-        if (!isFinite(seconds) || seconds < 0) return 'Calculating...';
-        if (seconds < 60) return `${Math.round(seconds)}s`;
-        const minutes = Math.floor(seconds / 60);
-        const secs = Math.round(seconds % 60);
-        return `${minutes}m ${secs}s`;
     };
 
     const handleCancelUpload = () => {
@@ -140,9 +147,7 @@ export default function UploadForm({ categories, type = 'REEL' }: UploadFormProp
         });
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
+    const handleSubmit = async () => {
         if (!videoFile) {
             setError('Please select a video file');
             return;
@@ -152,41 +157,24 @@ export default function UploadForm({ categories, type = 'REEL' }: UploadFormProp
         setIsLoading(true);
         setIsUploading(true);
 
-
         try {
             const formDataToSend = new FormData();
-
-            // Add files
             formDataToSend.append('video', videoFile);
-            if (thumbnailFile) {
-                formDataToSend.append('thumbnail', thumbnailFile);
-            }
+            if (thumbnailFile) formDataToSend.append('thumbnail', thumbnailFile);
 
-            // Add all form fields with proper defaults
             formDataToSend.append('title', formData.title);
+            formDataToSend.append('description', formData.description || formData.title);
             formDataToSend.append('category_id', formData.categoryId.toString());
             formDataToSend.append('type', type);
-
-            // Add defaults for optional fields to match database schema
-            formDataToSend.append('description', formData.title); // Use title as description by default
-            formDataToSend.append('language', 'Hindi'); // Default language
-            formDataToSend.append('content_rating', 'U'); // Universal rating by default
-            formDataToSend.append('is_active', 'true'); // Active by default
-            formDataToSend.append('is_featured', 'false'); // Not featured
-            formDataToSend.append('is_trending', 'false'); // Not trending
-
-            console.log('Uploading with data:', {
-                title: formData.title,
-                category_id: formData.categoryId,
-                type,
-                hasVideo: !!videoFile,
-                hasThumbnail: !!thumbnailFile
-            });
+            formDataToSend.append('language', formData.language);
+            formDataToSend.append('content_rating', formData.contentRating);
+            formDataToSend.append('is_active', 'true');
+            formDataToSend.append('is_featured', 'false');
+            formDataToSend.append('is_trending', 'false');
 
             const response = await uploadWithProgress(formDataToSend);
 
             if (response.success) {
-                console.log('Upload successful, redirecting to dashboard');
                 router.push('/u/dashboard');
             } else {
                 setError(response.message || 'Upload failed');
@@ -203,109 +191,310 @@ export default function UploadForm({ categories, type = 'REEL' }: UploadFormProp
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6 animate-in fade-in duration-300">
-            {/* Error Display */}
-            {error && (
-                <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3 flex items-center gap-2 text-rose-500 text-xs font-bold">
-                    <X className="w-4 h-4" />
-                    <p className="flex-1">{error}</p>
-                    <button type="button" onClick={() => setError(null)}><X className="w-3 h-3" /></button>
-                </div>
-            )}
-
-            {/* Upload Progress */}
-            {isUploading && uploadProgress && (
-                <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
-                                <Upload className="w-4 h-4 text-white animate-pulse" />
+        <div className="space-y-8">
+            {/* Step Indicator */}
+            <div className="flex items-center justify-center gap-4 mb-2">
+                {[
+                    { id: 'FILE', label: 'File' },
+                    { id: 'DETAILS', label: 'Details' },
+                    { id: 'PREVIEW', label: 'Review' }
+                ].map((step, idx) => (
+                    <div key={step.id} className="flex items-center gap-4">
+                        <button
+                            disabled={idx > (['FILE', 'DETAILS', 'PREVIEW'].indexOf(currentStep))}
+                            onClick={() => setCurrentStep(step.id as Step)}
+                            className={`flex flex-col items-center gap-2 group transition-all ${currentStep === step.id ? 'opacity-100 scale-110' : 'opacity-40 hover:opacity-100'}`}
+                        >
+                            <div className={`w-10 h-10 rounded-[18px] flex items-center justify-center text-xs font-black transition-all ${currentStep === step.id ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/30' : 'bg-slate-100 dark:bg-white/5 text-slate-500'}`}>
+                                {idx + 1}
                             </div>
-                            <div>
-                                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-tight">Uploading...</h3>
-                                <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
-                                    {formatBytes(uploadProgress.uploadedBytes)} / {formatBytes(uploadProgress.totalBytes)}
-                                </p>
-                            </div>
-                        </div>
-                        <button onClick={handleCancelUpload} className="text-[10px] font-bold text-rose-500 uppercase hover:underline">Cancel</button>
+                            <span className="text-[9px] font-black uppercase tracking-[0.2em]">{step.label}</span>
+                        </button>
+                        {idx < 2 && <div className="w-12 h-[2px] bg-slate-100 dark:bg-white/5 mb-6" />}
                     </div>
-                    <div className="w-full h-1.5 bg-slate-200 dark:bg-white/5 rounded-full overflow-hidden">
-                        <div className="h-full bg-indigo-600 transition-all duration-300" style={{ width: `${uploadProgress.percentage}%` }} />
-                    </div>
-                </div>
-            )}
-
-            <div className="space-y-5 text-left">
-                {/* Title */}
-                <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">
-                        {type === 'REEL' ? 'Caption' : 'Video Title'}
-                    </label>
-                    <input
-                        name="title"
-                        value={formData.title}
-                        onChange={(e) => handleChange('title', e.target.value)}
-                        required
-                        placeholder="Enter title..."
-                        className="w-full px-4 py-3 bg-white dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl focus:ring-1 focus:ring-indigo-500 outline-none transition-all text-sm font-medium"
-                    />
-                </div>
-
-                {/* File Pickers */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">Video File</label>
-                        <div className="relative border border-dashed border-slate-200 dark:border-white/10 rounded-xl p-6 text-center hover:border-indigo-500 transition-all group overflow-hidden bg-slate-50/50 dark:bg-white/2">
-                            <input type="file" accept="video/*" required onChange={(e) => setVideoFile(e.target.files?.[0] || null)} className="absolute inset-0 opacity-0 cursor-pointer" />
-                            <Film className="w-6 h-6 mx-auto mb-2 text-slate-300 dark:text-slate-600" />
-                            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tighter truncate max-w-full">
-                                {videoFile ? videoFile.name : 'Select Video'}
-                            </p>
-                        </div>
-                    </div>
-                    <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">Thumbnail</label>
-                        <div className="relative border border-dashed border-slate-200 dark:border-white/10 rounded-xl p-1 text-center hover:border-indigo-500 transition-all min-h-[92px] flex items-center justify-center bg-slate-50/50 dark:bg-white/2">
-                            <input type="file" accept="image/*" onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) { setThumbnailFile(file); setThumbnailPreview(URL.createObjectURL(file)); }
-                            }} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
-                            {thumbnailPreview ? (
-                                <Image src={thumbnailPreview} alt="Preview" fill className="object-cover rounded-lg" />
-                            ) : (
-                                <div className="space-y-1">
-                                    <ImageIcon className="w-6 h-6 mx-auto text-slate-300 dark:text-slate-600" />
-                                    <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tighter">Add Art</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Categories */}
-                <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">Category</label>
-                    <select
-                        name="categoryId"
-                        value={formData.categoryId}
-                        onChange={(e) => handleChange('categoryId', e.target.value)}
-                        required
-                        className="w-full px-4 py-3 bg-white dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl outline-none text-sm font-medium cursor-pointer"
-                    >
-                        {categories.map(c => <option key={c.id} value={c.id} className="dark:bg-slate-900">{c.name}</option>)}
-                    </select>
-                </div>
+                ))}
             </div>
 
-            <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full py-3.5 bg-indigo-600 text-white rounded-xl font-bold text-[11px] uppercase tracking-[0.2em] hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/20 disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                {isLoading ? 'Processing...' : `Submit ${type}`}
-            </button>
-        </form>
+            {/* Error Display */}
+            {error && (
+                <div className="bg-rose-500/10 border border-rose-500/20 rounded-2xl p-4 flex items-center gap-3 text-rose-500 text-xs font-black uppercase tracking-widest animate-in shake">
+                    <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                    <p className="flex-1">{error}</p>
+                    <button onClick={() => setError(null)}><X className="w-4 h-4" /></button>
+                </div>
+            )}
+
+            {/* Uploading Overlay */}
+            {isUploading && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-50/80 dark:bg-black/80 backdrop-blur-xl animate-in fade-in duration-500">
+                    <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-[48px] p-10 border border-slate-200 dark:border-white/10 shadow-2xl space-y-8">
+                        <div className="text-center space-y-4">
+                            <div className="w-20 h-20 rounded-[32px] bg-indigo-600/10 text-indigo-600 flex items-center justify-center mx-auto transition-transform animate-bounce">
+                                <Upload className="w-10 h-10" />
+                            </div>
+                            <h2 className="text-2xl font-black uppercase tracking-tight text-slate-900 dark:text-white">Uploading Your Vision</h2>
+                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-relaxed">
+                                Please keep this page open. Your video is being securely transmitted to our high-speed servers.
+                            </p>
+                        </div>
+
+                        {uploadProgress && (
+                            <div className="space-y-4">
+                                <div className="h-4 w-full bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
+                                    <div className="h-full bg-gradient-to-r from-indigo-500 to-purple-600 transition-all duration-300 relative" style={{ width: `${uploadProgress.percentage}%` }}>
+                                        <div className="absolute inset-0 bg-white/20 animate-pulse" />
+                                    </div>
+                                </div>
+                                <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+                                    <span className="text-indigo-600">{uploadProgress.percentage}% Completed</span>
+                                    <span className="text-slate-400">{formatBytes(uploadProgress.uploadedBytes)} / {formatBytes(uploadProgress.totalBytes)}</span>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="pt-4">
+                            <button
+                                onClick={handleCancelUpload}
+                                className="w-full py-4 text-xs font-black uppercase tracking-widest text-rose-500 hover:bg-rose-500/10 rounded-2xl transition-all"
+                            >
+                                Abort Upload
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Step Content */}
+            <div className="min-h-[400px]">
+                {currentStep === 'FILE' && (
+                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <div className="space-y-2 text-center">
+                            <h3 className="text-lg font-black uppercase tracking-tight text-slate-900 dark:text-white">Choose your Source</h3>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Drag and drop or browse your local files</p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            {/* Video Upload Zone */}
+                            <div
+                                className={`relative border-2 border-dashed rounded-[40px] p-8 text-center transition-all group overflow-hidden ${videoFile ? 'border-indigo-500 bg-indigo-500/5' : 'border-slate-200 dark:border-white/10 hover:border-indigo-500/50 bg-slate-50/50 dark:bg-white/2'}`}
+                            >
+                                <input type="file" accept="video/*" onChange={(e) => setVideoFile(e.target.files?.[0] || null)} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
+                                <div className="relative z-0 space-y-4">
+                                    <div className={`w-16 h-16 rounded-[24px] flex items-center justify-center mx-auto transition-all ${videoFile ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-100 dark:bg-white/5 text-slate-400 group-hover:scale-110'}`}>
+                                        <Film className="w-8 h-8" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-widest truncate px-4">
+                                            {videoFile ? videoFile.name : 'Select Video File'}
+                                        </p>
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter mt-1">
+                                            {videoFile ? formatBytes(videoFile.size) : 'Supported: MP4, MKV, MOV'}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Thumbnail Upload Zone */}
+                            <div
+                                className={`relative border-2 border-dashed rounded-[40px] p-8 text-center transition-all group overflow-hidden ${thumbnailFile ? 'border-emerald-500 bg-emerald-500/5' : 'border-slate-200 dark:border-white/10 hover:border-indigo-500/50 bg-slate-50/50 dark:bg-white/2'}`}
+                            >
+                                <input type="file" accept="image/*" onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) { setThumbnailFile(file); setThumbnailPreview(URL.createObjectURL(file)); }
+                                }} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
+                                {thumbnailPreview ? (
+                                    <div className="absolute inset-0 z-0">
+                                        <Image src={thumbnailPreview} alt="Preview" fill className="object-cover transition-transform group-hover:scale-110 duration-700" />
+                                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <p className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Change Artwork</p>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        <div className="w-16 h-16 rounded-[24px] bg-slate-100 dark:bg-white/5 text-slate-400 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                                            <ImageIcon className="w-8 h-8" />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-widest">Cover Image</p>
+                                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter mt-1">Highly Recommended</p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end pt-8">
+                            <button
+                                onClick={() => setCurrentStep('DETAILS')}
+                                disabled={!videoFile}
+                                className="px-10 py-5 bg-indigo-600 text-white rounded-[24px] text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-4 hover:bg-slate-900 dark:hover:bg-white dark:hover:text-black transition-all shadow-xl shadow-indigo-600/20 disabled:opacity-30 disabled:grayscale active:scale-95"
+                            >
+                                Next Step <ChevronRight className="w-5 h-5" />
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {currentStep === 'DETAILS' && (
+                    <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-700 max-w-2xl mx-auto">
+                        <div className="space-y-2 text-center">
+                            <h3 className="text-lg font-black uppercase tracking-tight text-slate-900 dark:text-white">Content Information</h3>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Help users discover your video</p>
+                        </div>
+
+                        <div className="space-y-6 text-left">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Creative Title</label>
+                                    <input
+                                        value={formData.title}
+                                        onChange={(e) => handleChange('title', e.target.value)}
+                                        placeholder="What's your story called?"
+                                        className="w-full px-6 py-4 bg-white/50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-2xl focus:ring-2 focus:ring-indigo-600 outline-none transition-all text-sm font-bold uppercase"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Placement</label>
+                                    <select
+                                        value={formData.categoryId}
+                                        onChange={(e) => handleChange('categoryId', e.target.value)}
+                                        className="w-full px-6 py-4 bg-white/50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-2xl outline-none text-sm font-bold uppercase cursor-pointer focus:ring-2 focus:ring-indigo-600"
+                                    >
+                                        {categories.map(c => <option key={c.id} value={c.id} className="dark:bg-slate-900">{c.name}</option>)}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Narration</label>
+                                <textarea
+                                    value={formData.description}
+                                    onChange={(e) => handleChange('description', e.target.value)}
+                                    rows={4}
+                                    placeholder="Write a brief overview of your content..."
+                                    className="w-full px-6 py-4 bg-white/50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-2xl focus:ring-2 focus:ring-indigo-600 outline-none transition-all text-sm font-medium leading-relaxed"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Language</label>
+                                    <input
+                                        value={formData.language}
+                                        onChange={(e) => handleChange('language', e.target.value)}
+                                        placeholder="e.g. Hindi, English"
+                                        className="w-full px-6 py-4 bg-white/50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-2xl focus:ring-2 focus:ring-indigo-600 outline-none transition-all text-sm font-bold uppercase"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Audience Rating</label>
+                                    <select
+                                        value={formData.contentRating}
+                                        onChange={(e) => handleChange('contentRating', e.target.value)}
+                                        className="w-full px-6 py-4 bg-white/50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-2xl outline-none text-sm font-bold uppercase cursor-pointer"
+                                    >
+                                        <option value="U" className="dark:bg-slate-900">U - All Ages</option>
+                                        <option value="UA" className="dark:bg-slate-900">UA - Parental Guidance</option>
+                                        <option value="A" className="dark:bg-slate-900">A - Adults Only</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-between pt-8">
+                            <button
+                                onClick={() => setCurrentStep('FILE')}
+                                className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-3 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all"
+                            >
+                                <ChevronLeft className="w-5 h-5" /> Go Back
+                            </button>
+                            <button
+                                onClick={() => setCurrentStep('PREVIEW')}
+                                disabled={!formData.title}
+                                className="px-10 py-5 bg-indigo-600 text-white rounded-[24px] text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-4 hover:bg-slate-900 dark:hover:bg-white dark:hover:text-black transition-all shadow-xl shadow-indigo-600/20 disabled:opacity-30 active:scale-95"
+                            >
+                                Review <ChevronRight className="w-5 h-5" />
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {currentStep === 'PREVIEW' && (
+                    <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-700">
+                        <div className="space-y-2 text-center">
+                            <h3 className="text-lg font-black uppercase tracking-tight text-slate-900 dark:text-white">Validation & Review</h3>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Double check your content before going live</p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
+                            <div className="md:col-span-7 space-y-6">
+                                <div className="aspect-video bg-black rounded-[40px] overflow-hidden relative shadow-2xl border border-white/10">
+                                    {videoPreview ? (
+                                        <video src={videoPreview} controls className="w-full h-full object-contain" />
+                                    ) : (
+                                        <div className="flex items-center justify-center h-full text-white font-black uppercase tracking-widest text-[10px]">Preview Unavailable</div>
+                                    )}
+                                </div>
+                                <div className="p-8 rounded-[40px] bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 space-y-4">
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-500">
+                                            <CheckCircle2 className="w-6 h-6" />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-sm font-black uppercase tracking-tight text-slate-900 dark:text-white">Assets Ready</h4>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Video and thumbnail passed local validation</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="md:col-span-5 space-y-8 flex flex-col justify-between py-4">
+                                <div className="space-y-6">
+                                    <div className="space-y-1">
+                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Title</label>
+                                        <p className="text-xl font-black text-slate-900 dark:text-white uppercase leading-tight line-clamp-3">{formData.title}</p>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-6">
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Category</label>
+                                            <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase">{categories.find(c => c.id == formData.categoryId)?.name}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Size</label>
+                                            <p className="text-xs font-bold text-slate-900 dark:text-white uppercase">{formatBytes(videoFile?.size || 0)}</p>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Description</label>
+                                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-4 italic">
+                                            "{formData.description || 'No description provided.'}"
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={handleSubmit}
+                                    disabled={isLoading}
+                                    className="w-full py-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-[32px] font-black text-xs uppercase tracking-[0.4em] hover:scale-[1.02] active:scale-95 transition-all shadow-2xl shadow-indigo-600/30 flex items-center justify-center gap-3 relative overflow-hidden group"
+                                >
+                                    <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                                    {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
+                                    {isLoading ? 'Processing...' : 'Publish Video'}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-start">
+                            <button
+                                onClick={() => setCurrentStep('DETAILS')}
+                                className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-3 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all underline underline-offset-8 decoration-indigo-500/30"
+                            >
+                                <ChevronLeft className="w-5 h-5" /> Edit Details
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
     );
 }
