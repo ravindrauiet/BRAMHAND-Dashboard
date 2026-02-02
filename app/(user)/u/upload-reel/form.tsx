@@ -41,10 +41,29 @@ export default function UploadForm({ categories, type = 'REEL' }: UploadFormProp
         title: '',
         description: '',
         categoryId: categories[0]?.id || '',
+        genreId: '',
         language: 'Hindi',
+        releaseYear: new Date().getFullYear(),
+        level: 'Standard',
+        tags: '',
         contentRating: 'U',
-        isFeatured: false
+        isFeatured: false,
+        // Advanced Fields
+        director: '',
+        productionCompany: '',
+        trailerUrl: '',
+        rating: '',
+        maturityRating: '',
+        awards: '',
+        videoQuality: 'HD',
+        // Arrays
+        cast: [] as string[],
+        crew: [] as string[],
+        audioLanguages: [] as string[],
+        subtitles: [] as string[]
     });
+
+    const [newItem, setNewItem] = useState({ cast: '', crew: '', audio: '', subtitle: '' });
 
     useEffect(() => {
         if (videoFile) {
@@ -56,6 +75,17 @@ export default function UploadForm({ categories, type = 'REEL' }: UploadFormProp
 
     const handleChange = (field: string, value: any) => {
         setFormData(prev => ({ ...prev, [field]: value }));
+    };
+
+    const addItem = (field: 'cast' | 'crew' | 'audioLanguages' | 'subtitles', value: string) => {
+        if (!value.trim()) return;
+        setFormData(prev => ({ ...prev, [field]: [...prev[field], value.trim()] }));
+        if (field === 'cast') setNewItem(prev => ({ ...prev, cast: '' }));
+        if (field === 'crew') setNewItem(prev => ({ ...prev, crew: '' }));
+    };
+
+    const removeItem = (field: 'cast' | 'crew' | 'audioLanguages' | 'subtitles', index: number) => {
+        setFormData(prev => ({ ...prev, [field]: prev[field].filter((_, i) => i !== index) }));
     };
 
     const formatBytes = (bytes: number): string => {
@@ -154,6 +184,17 @@ export default function UploadForm({ categories, type = 'REEL' }: UploadFormProp
             return;
         }
 
+        if (!formData.title.trim()) {
+            setError('Please enter a title');
+            return;
+        }
+
+        // Robust Validation to prevent crashes
+        if (!formData.categoryId) {
+            setError('Please select a category');
+            return;
+        }
+
         setError(null);
         setIsLoading(true);
         setIsUploading(true);
@@ -163,12 +204,38 @@ export default function UploadForm({ categories, type = 'REEL' }: UploadFormProp
             formDataToSend.append('video', videoFile);
             if (thumbnailFile) formDataToSend.append('thumbnail', thumbnailFile);
 
-            formDataToSend.append('title', formData.title);
+            formDataToSend.append('title', formData.title.trim());
             formDataToSend.append('description', formData.description || formData.title);
             formDataToSend.append('category_id', formData.categoryId.toString());
+            // Safe handling for optional fields
+            if (formData.genreId) formDataToSend.append('genre_id', formData.genreId.toString());
+
             formDataToSend.append('type', type);
             formDataToSend.append('language', formData.language);
             formDataToSend.append('content_rating', formData.contentRating);
+            formDataToSend.append('release_year', formData.releaseYear.toString());
+
+            // Handle tags as array for backend
+            if (formData.tags) {
+                const tagsArray = formData.tags.split(',').map(t => t.trim()).filter(Boolean);
+                formDataToSend.append('tags', JSON.stringify(tagsArray));
+            }
+
+            // Advanced Fields
+            if (formData.director) formDataToSend.append('director', formData.director);
+            if (formData.productionCompany) formDataToSend.append('productionCompany', formData.productionCompany);
+            if (formData.rating) formDataToSend.append('rating', formData.rating);
+            if (formData.videoQuality) formDataToSend.append('videoQuality', formData.videoQuality);
+            if (formData.trailerUrl) formDataToSend.append('trailerUrl', formData.trailerUrl);
+            if (formData.maturityRating) formDataToSend.append('maturityRating', formData.maturityRating);
+            if (formData.awards) formDataToSend.append('awards', formData.awards);
+
+            // JSON Arrays
+            if (formData.cast.length > 0) formDataToSend.append('cast', JSON.stringify(formData.cast));
+            if (formData.crew.length > 0) formDataToSend.append('crew', JSON.stringify(formData.crew));
+            if (formData.audioLanguages.length > 0) formDataToSend.append('audioLanguages', JSON.stringify(formData.audioLanguages));
+            if (formData.subtitles.length > 0) formDataToSend.append('subtitles', JSON.stringify(formData.subtitles));
+
             formDataToSend.append('is_active', 'true');
             formDataToSend.append('is_featured', formData.isFeatured ? 'true' : 'false');
             formDataToSend.append('is_trending', 'false');
@@ -371,11 +438,124 @@ export default function UploadForm({ categories, type = 'REEL' }: UploadFormProp
                                 <textarea
                                     value={formData.description}
                                     onChange={(e) => handleChange('description', e.target.value)}
-                                    rows={4}
+                                    rows={3}
                                     placeholder="Write a brief overview of your content..."
                                     className="w-full px-6 py-4 bg-white/50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-2xl focus:ring-2 focus:ring-indigo-600 outline-none transition-all text-sm font-medium leading-relaxed"
                                 />
                             </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Release Year</label>
+                                    <input
+                                        type="number"
+                                        min="1900"
+                                        max="2099"
+                                        value={formData.releaseYear}
+                                        onChange={(e) => handleChange('releaseYear', parseInt(e.target.value))}
+                                        className="w-full px-6 py-4 bg-white/50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-2xl focus:ring-2 focus:ring-indigo-600 outline-none transition-all text-sm font-bold uppercase"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Language</label>
+                                    <select
+                                        value={formData.language}
+                                        onChange={(e) => handleChange('language', e.target.value)}
+                                        className="w-full px-6 py-4 bg-white/50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-2xl outline-none text-sm font-bold uppercase cursor-pointer focus:ring-2 focus:ring-indigo-600"
+                                    >
+                                        {["Hindi", "English", "Maithili", "Bhojpuri", "Tamil", "Other"].map(l => (
+                                            <option key={l} value={l} className="dark:bg-slate-900">{l}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Tags / Keywords</label>
+                                <input
+                                    value={formData.tags}
+                                    onChange={(e) => handleChange('tags', e.target.value)}
+                                    placeholder="Action, Drama, 2024, Full Movie (Comma separated)"
+                                    className="w-full px-6 py-4 bg-white/50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-2xl focus:ring-2 focus:ring-indigo-600 outline-none transition-all text-sm font-bold uppercase placeholder:normal-case"
+                                />
+                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter pl-2">helps in search & recommendations</p>
+                            </div>
+
+                            {/* Advanced Fields: Cast & Crew */}
+                            <div className="pt-6 border-t border-slate-200 dark:border-white/5">
+                                <h4 className="text-sm font-black uppercase tracking-tight text-slate-900 dark:text-white mb-4">Cast & Crew</h4>
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Director</label>
+                                            <input
+                                                value={formData.director}
+                                                onChange={(e) => handleChange('director', e.target.value)}
+                                                className="w-full px-6 py-4 bg-white/50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-2xl focus:ring-2 focus:ring-indigo-600 outline-none transition-all text-sm font-bold"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Production Co.</label>
+                                            <input
+                                                value={formData.productionCompany}
+                                                onChange={(e) => handleChange('productionCompany', e.target.value)}
+                                                className="w-full px-6 py-4 bg-white/50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-2xl focus:ring-2 focus:ring-indigo-600 outline-none transition-all text-sm font-bold"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Cast Chips */}
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Cast Members</label>
+                                        <div className="flex gap-2">
+                                            <input
+                                                value={newItem.cast}
+                                                onChange={(e) => setNewItem({ ...newItem, cast: e.target.value })}
+                                                onKeyDown={(e) => e.key === 'Enter' && addItem('cast', newItem.cast)}
+                                                placeholder="Add Actor Name"
+                                                className="flex-1 px-6 py-4 bg-white/50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-2xl focus:ring-2 focus:ring-indigo-600 outline-none transition-all text-sm font-bold"
+                                            />
+                                            <button onClick={() => addItem('cast', newItem.cast)} className="px-6 rounded-2xl bg-indigo-600 text-white font-black uppercase text-xs">Add</button>
+                                        </div>
+                                        <div className="flex flex-wrap gap-2 mt-2">
+                                            {formData.cast.map((item, idx) => (
+                                                <span key={idx} className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-indigo-50/50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 text-xs font-bold border border-indigo-100 dark:border-indigo-500/20">
+                                                    {item} <button onClick={() => removeItem('cast', idx)}><X className="w-3 h-3" /></button>
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Technical Details */}
+                            <div className="pt-6 border-t border-slate-200 dark:border-white/5">
+                                <h4 className="text-sm font-black uppercase tracking-tight text-slate-900 dark:text-white mb-4">Technical & Media</h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Video Quality</label>
+                                        <select
+                                            value={formData.videoQuality}
+                                            onChange={(e) => handleChange('videoQuality', e.target.value)}
+                                            className="w-full px-6 py-4 bg-white/50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-2xl outline-none text-sm font-bold cursor-pointer"
+                                        >
+                                            {['SD', 'HD', 'FHD', '4K', '8K'].map(q => <option key={q} value={q} className="dark:bg-slate-900">{q}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Rating (0-10)</label>
+                                        <input
+                                            type="number"
+                                            min="0" max="10" step="0.1"
+                                            value={formData.rating}
+                                            onChange={(e) => handleChange('rating', e.target.value)}
+                                            className="w-full px-6 py-4 bg-white/50 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-2xl outline-none text-sm font-bold"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+
 
                             {/* {type === 'VIDEO' && (
                                 <div className="flex items-center gap-4 bg-white/50 dark:bg-black/40 p-6 rounded-2xl border border-slate-200 dark:border-white/10 group hover:border-indigo-500/50 transition-all cursor-pointer mt-6" onClick={() => handleChange('isFeatured', !formData.isFeatured)}>
@@ -449,19 +629,103 @@ export default function UploadForm({ categories, type = 'REEL' }: UploadFormProp
                                         <label className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Title</label>
                                         <p className="text-xl font-black text-slate-900 dark:text-white uppercase leading-tight line-clamp-3">{formData.title}</p>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-6">
+
+                                    {/* Primary Meta Grid */}
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-6">
                                         <div className="space-y-1">
                                             <label className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Category</label>
-                                            <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase">{categories.find(c => c.id == formData.categoryId)?.name}</p>
+                                            <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase">{categories.find(c => c.id == formData.categoryId)?.name || 'N/A'}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Director</label>
+                                            <p className="text-xs font-bold text-slate-900 dark:text-white uppercase truncate">{formData.director || 'N/A'}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Production</label>
+                                            <p className="text-xs font-bold text-slate-900 dark:text-white uppercase truncate">{formData.productionCompany || 'N/A'}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Release Year</label>
+                                            <p className="text-xs font-bold text-slate-900 dark:text-white uppercase">{formData.releaseYear}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Language</label>
+                                            <p className="text-xs font-bold text-slate-900 dark:text-white uppercase">{formData.language}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Content Rating</label>
+                                            <span className="inline-flex items-center px-2 py-0.5 rounded border border-slate-300 dark:border-white/20 text-[10px] font-black uppercase text-slate-900 dark:text-white">
+                                                {formData.contentRating}
+                                            </span>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Quality</label>
+                                            <div className="flex gap-2">
+                                                <span className="text-xs font-bold text-slate-900 dark:text-white uppercase">{formData.videoQuality}</span>
+                                                {formData.rating && <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500 font-bold border border-amber-500/20">⭐ {formData.rating}</span>}
+                                            </div>
                                         </div>
                                         <div className="space-y-1">
                                             <label className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Size</label>
                                             <p className="text-xs font-bold text-slate-900 dark:text-white uppercase">{formatBytes(videoFile?.size || 0)}</p>
                                         </div>
+                                        {formData.trailerUrl && (
+                                            <div className="space-y-1">
+                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Trailer</label>
+                                                <a href={formData.trailerUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-indigo-500 hover:underline uppercase truncate block">View Link</a>
+                                            </div>
+                                        )}
                                     </div>
-                                    <div className="space-y-1">
+
+                                    {/* Cast Members */}
+                                    {formData.cast.length > 0 && (
+                                        <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-white/5">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Cast</label>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {formData.cast.map((actor, i) => (
+                                                    <span key={i} className="text-[10px] px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold border border-slate-200 dark:border-white/5">
+                                                        {actor}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Crew Members */}
+                                    {formData.crew.length > 0 && (
+                                        <div className="space-y-2">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Crew</label>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {formData.crew.map((item, i) => (
+                                                    <span key={i} className="text-[10px] px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold border border-slate-200 dark:border-white/5">
+                                                        {item}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Languages & Subtitles */}
+                                    {(formData.audioLanguages.length > 0 || formData.subtitles.length > 0) && (
+                                        <div className="grid grid-cols-2 gap-4">
+                                            {formData.audioLanguages.length > 0 && (
+                                                <div className="space-y-2">
+                                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Audio</label>
+                                                    <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 leading-relaxed">{formData.audioLanguages.join(', ')}</p>
+                                                </div>
+                                            )}
+                                            {formData.subtitles.length > 0 && (
+                                                <div className="space-y-2">
+                                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Subtitles</label>
+                                                    <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 leading-relaxed">{formData.subtitles.join(', ')}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    <div className="space-y-1 pt-2 border-t border-slate-200 dark:border-white/5">
                                         <label className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Description</label>
-                                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-4 italic">
+                                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 leading-relaxed max-h-32 overflow-y-auto italic">
                                             "{formData.description || 'No description provided.'}"
                                         </p>
                                     </div>

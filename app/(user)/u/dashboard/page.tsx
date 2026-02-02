@@ -85,7 +85,7 @@ export default async function UserDashboard({ searchParams }: { searchParams: { 
         const greeting = hour < 12 ? 'Good Morning' : hour < 18 ? 'Good Afternoon' : 'Good Evening';
 
         return (
-            <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0f] text-slate-900 dark:text-slate-100 selection:bg-indigo-500/30 transition-colors duration-500">
+            <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0f] text-slate-900 dark:text-slate-100 selection:bg-indigo-500/30 transition-colors duration-500 overflow-x-hidden">
                 <PublicNavbar />
 
                 <main className="pt-24 pb-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">

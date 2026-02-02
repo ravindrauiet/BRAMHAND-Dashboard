@@ -104,7 +104,7 @@ export function PublicNavbar() {
                         <div className="md:hidden">
                             <button
                                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                                className="p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
+                                className="p-2 text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg transition-colors"
                             >
                                 {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
                             </button>
@@ -115,14 +115,20 @@ export function PublicNavbar() {
 
             {/* Mobile Menu */}
             {isMenuOpen && (
-                <div className="md:hidden absolute top-full left-0 right-0 bg-[#0a0a14] border-t border-white/10 p-6 space-y-4 shadow-2xl">
+                <div className="md:hidden absolute top-full left-0 right-0 bg-white dark:bg-[#0a0a14] border-t border-slate-200 dark:border-white/10 p-6 space-y-4 shadow-2xl transition-colors">
                     <nav className="flex flex-col gap-4">
                         <Link href="/" className="text-lg font-bold text-[#fbbf24]">Home</Link>
-                        <Link href="/browse?cat=movies" className="text-lg font-semibold text-white/70">Movies</Link>
-                        <Link href="/browse?cat=series" className="text-lg font-semibold text-white/70">Series</Link>
-                        <Link href="/browse?cat=reels" className="text-lg font-semibold text-white/70">Reels</Link>
-                        <hr className="border-white/10" />
-                        <Link href="/auth/signin" className="text-white/50">Login / Sign Up</Link>
+                        <Link href="/browse?cat=movies" className="text-lg font-semibold text-slate-700 dark:text-white/70">Movies</Link>
+                        <Link href="/browse?cat=series" className="text-lg font-semibold text-slate-700 dark:text-white/70">Series</Link>
+                        <Link href="/browse?cat=reels" className="text-lg font-semibold text-slate-700 dark:text-white/70">Reels</Link>
+                        <hr className="border-slate-200 dark:border-white/10" />
+                        {status === 'authenticated' ? (
+                            <Link href="/u/dashboard" className="text-lg font-semibold text-indigo-600 dark:text-indigo-400">
+                                Go to Dashboard
+                            </Link>
+                        ) : (
+                            <Link href="/auth/signin" className="text-slate-500 dark:text-white/50">Login / Sign Up</Link>
+                        )}
                     </nav>
                 </div>
             )}
