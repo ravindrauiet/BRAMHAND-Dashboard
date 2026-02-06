@@ -82,13 +82,21 @@ export function UserList({ users }: UserListProps) {
                                     <td className="px-6 py-4">
                                         <div className="flex flex-col gap-2 items-start">
                                             {user.isCreator ? (
-                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20">
+                                                <button
+                                                    onClick={() => toggleUserCreatorStatus(user.id, false)}
+                                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 hover:bg-emerald-200 dark:hover:bg-emerald-500/20 transition-colors cursor-pointer"
+                                                    title="Click to remove Creator status"
+                                                >
                                                     <Zap className="w-3 h-3" /> Creator
-                                                </span>
+                                                </button>
                                             ) : (
-                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
-                                                    <UserIcon className="w-3 h-3" /> Viewer
-                                                </span>
+                                                <button
+                                                    onClick={() => toggleUserCreatorStatus(user.id, true)}
+                                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium text-red-700 dark:text-red-400 border border-red-200 dark:border-red-500/20 hover:bg-red-200 dark:hover:bg-red-500/20 transition-colors cursor-pointer"
+                                                    title="Click to make this user a Creator"
+                                                >
+                                                    viewer
+                                                </button>
                                             )}
                                         </div>
                                     </td>
