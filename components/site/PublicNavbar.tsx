@@ -10,6 +10,7 @@ import { useSession } from 'next-auth/react';
 export function PublicNavbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+    const [profileImage, setProfileImage] = useState<string | null>(null);
     const { data: session, status } = useSession();
 
     useEffect(() => {
@@ -17,6 +18,30 @@ export function PublicNavbar() {
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
+
+    // Fetch profile image from API when authenticated
+    useEffect(() => {
+        if (status === 'authenticated' && session?.accessToken) {
+            const fetchProfile = async () => {
+                try {
+                    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+                    const res = await fetch(`${apiUrl}/user/profile`, {
+                        headers: {
+                            'Authorization': `Bearer ${session.accessToken}`
+                        }
+                    });
+                    const data = await res.json();
+                    // API returns { user: { profile_image: '...' } }
+                    if (data.user?.profile_image) {
+                        setProfileImage(data.user.profile_image);
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch profile:', error);
+                }
+            };
+            fetchProfile();
+        }
+    }, [status, session]);
 
     const [searchQuery, setSearchQuery] = useState('');
     const router = useRouter();
@@ -84,8 +109,8 @@ export function PublicNavbar() {
                         {status === 'authenticated' && session?.user ? (
                             <Link href="/u/dashboard">
                                 <div className="h-10 w-10 rounded-full border-2 border-[#fbbf24]/30 bg-cover bg-center ring-4 ring-black/50 overflow-hidden relative">
-                                    {session.user.image ? (
-                                        <img src={session.user.image} alt="Profile" className="object-cover w-full h-full" />
+                                    {profileImage || session.user.image ? (
+                                        <img src={profileImage || session.user.image} alt="Profile" className="object-cover w-full h-full" />
                                     ) : (
                                         <div className="w-full h-full bg-slate-800 flex items-center justify-center font-bold text-[#fbbf24]">
                                             {session.user.name?.[0]?.toUpperCase() || 'U'}

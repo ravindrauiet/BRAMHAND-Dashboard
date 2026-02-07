@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Image from 'next/image';
-import { User, Video, Music, Heart, Clock, Settings, Shield, Wallet, Film, Calendar, Mail, Phone, MapPin, BadgeCheck, Zap, Activity, List, Grid } from 'lucide-react';
+import { User, Video, Music, Heart, Clock, Settings, Shield, Wallet, Film, Calendar, Mail, Phone, MapPin, BadgeCheck, Zap, Activity, List, Grid, Camera, Loader2 } from 'lucide-react';
 import { updateUser } from './actions';
 
 interface UserDetailsProps {
@@ -11,8 +11,62 @@ interface UserDetailsProps {
 
 export function UserDetails({ user }: UserDetailsProps) {
     const [activeTab, setActiveTab] = useState('overview');
+    const [profileImage, setProfileImage] = useState<string | null>(user.profileImage);
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadError, setUploadError] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const createdDate = new Date(user.createdAt).toLocaleDateString('en-GB');
+
+    // Handle profile image upload
+    const handleProfileImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Validate file type
+        if (!['image/jpeg', 'image/png', 'image/webp', 'image/jpg'].includes(file.type)) {
+            setUploadError('Please select a valid image file (JPG, PNG, or WebP)');
+            return;
+        }
+
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            setUploadError('Image must be less than 5MB');
+            return;
+        }
+
+        setIsUploading(true);
+        setUploadError(null);
+
+        try {
+            const formData = new FormData();
+            formData.append('profileImage', file);
+
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+            const response = await fetch(`${apiUrl}/users/profile/image`, {
+                method: 'PUT',
+                body: formData,
+                credentials: 'include',
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setProfileImage(data.profileImage);
+                // Reset file input
+                if (fileInputRef.current) {
+                    fileInputRef.current.value = '';
+                }
+            } else {
+                setUploadError(data.error || 'Failed to upload image');
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+            setUploadError('Failed to upload image. Please try again.');
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     // Tab Navigation
     const tabs = [
@@ -293,6 +347,65 @@ export function UserDetails({ user }: UserDetailsProps) {
                                 <Settings className="w-5 h-5 text-slate-400" />
                                 Edit Profile
                             </h2>
+
+                            {/* Profile Image Upload Section */}
+                            <div className="mb-8 pb-8 border-b border-slate-100 dark:border-slate-800">
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-4">Profile Picture</label>
+                                <div className="flex items-center gap-6">
+                                    <div
+                                        className="relative w-24 h-24 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800 cursor-pointer group"
+                                        onClick={() => fileInputRef.current?.click()}
+                                    >
+                                        {profileImage ? (
+                                            <Image src={profileImage} alt="Profile" fill className="object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-slate-400">
+                                                <User className="w-10 h-10" />
+                                            </div>
+                                        )}
+                                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                            {isUploading ? (
+                                                <Loader2 className="w-6 h-6 text-white animate-spin" />
+                                            ) : (
+                                                <Camera className="w-6 h-6 text-white" />
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <input
+                                            ref={fileInputRef}
+                                            type="file"
+                                            accept="image/jpeg,image/png,image/webp"
+                                            onChange={handleProfileImageUpload}
+                                            className="hidden"
+                                            disabled={isUploading}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => fileInputRef.current?.click()}
+                                            disabled={isUploading}
+                                            className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                                        >
+                                            {isUploading ? (
+                                                <>
+                                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                                    Uploading...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Camera className="w-4 h-4" />
+                                                    Change Photo
+                                                </>
+                                            )}
+                                        </button>
+                                        <p className="text-xs text-slate-500 mt-2">JPG, PNG or WebP. Max 5MB.</p>
+                                        {uploadError && (
+                                            <p className="text-xs text-red-500 mt-1">{uploadError}</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
                             <form action={updateUser.bind(null, user.id)} className="space-y-6">
                                 <div className="grid grid-cols-2 gap-6">
                                     <div>

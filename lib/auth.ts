@@ -66,6 +66,7 @@ export const authOptions: NextAuthOptions = {
                 token.accessToken = user.accessToken;
                 token.role = user.role;
                 token.id = user.id;
+                token.image = user.image;
             }
             return token
         },
@@ -74,6 +75,7 @@ export const authOptions: NextAuthOptions = {
                 session.accessToken = token.accessToken;
                 session.user.role = token.role;
                 session.user.id = token.id;
+                session.user.image = token.image;
             }
             return session
         }
