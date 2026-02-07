@@ -109,8 +109,8 @@ export function PublicNavbar() {
                         {status === 'authenticated' && session?.user ? (
                             <Link href="/u/dashboard">
                                 <div className="h-10 w-10 rounded-full border-2 border-[#fbbf24]/30 bg-cover bg-center ring-4 ring-black/50 overflow-hidden relative">
-                                    {profileImage || session.user.image ? (
-                                        <img src={profileImage || session.user.image} alt="Profile" className="object-cover w-full h-full" />
+                                    {(profileImage || session.user.image) ? (
+                                        <img src={(profileImage || session.user.image) as string} alt="Profile" className="object-cover w-full h-full" />
                                     ) : (
                                         <div className="w-full h-full bg-slate-800 flex items-center justify-center font-bold text-[#fbbf24]">
                                             {session.user.name?.[0]?.toUpperCase() || 'U'}
