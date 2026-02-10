@@ -261,7 +261,7 @@ const getThumbnail = (video: any) => {
 };
 
 function formatDuration(seconds: number) {
-    if (!seconds) return '0m';
+    if (!seconds) return null;
     const min = Math.floor(seconds / 60);
     const sec = seconds % 60;
     if (min > 60) {

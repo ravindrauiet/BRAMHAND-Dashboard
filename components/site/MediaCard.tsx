@@ -14,7 +14,7 @@ const getThumbnail = (video: any) => {
 };
 
 function formatDuration(seconds: number) {
-    if (!seconds) return '0m';
+    if (!seconds) return null;
     const min = Math.floor(seconds / 60);
     const sec = seconds % 60;
     if (min > 60) {
@@ -159,7 +159,11 @@ export function MediaCard({ video, type = 'MOVIE', rank, className }: MediaCardP
                                 <span className="border border-white/30 px-1.5 py-0.5 rounded text-[10px] uppercase text-white/70">
                                     {video.content_rating || 'U/A'}
                                 </span>
-                                <span>{type === 'SERIES' ? `${video.episodeCount || '?'} Episodes` : formatDuration(video.duration)}</span>
+                                {type === 'SERIES' ? (
+                                    <span>{video.episodeCount || '?'} Episodes</span>
+                                ) : (
+                                    formatDuration(video.duration) && <span>{formatDuration(video.duration)}</span>
+                                )}
                                 <span className="px-1.5 py-0.5 border border-white/30 rounded text-[9px] uppercase">HD</span>
                             </div>
 

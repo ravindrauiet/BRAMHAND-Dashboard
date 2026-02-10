@@ -15,7 +15,7 @@ const getThumbnail = (video: any) => {
 };
 
 const formatDuration = (seconds: number) => {
-    if (!seconds) return '0m';
+    if (!seconds) return null; // Return null instead of '0m'
     const min = Math.floor(seconds / 60);
     const h = Math.floor(min / 60);
     const m = min % 60;
@@ -90,8 +90,11 @@ export function HeroCarousel({ videos }: HeroCarouselProps) {
 
     if (!heroVideos.length) return null;
 
+    // Helper to check if description is redundant (same as title)
+    const showDescription = activeVideo.description && activeVideo.description !== activeVideo.title;
+
     return (
-        <div className="relative h-[75vh] md:h-[95vh] w-full overflow-hidden shrink-0 group">
+        <div className="relative h-[85vh] md:h-[95vh] w-full overflow-hidden shrink-0 group">
 
             <AnimatePresence mode="wait">
                 <motion.div
@@ -121,21 +124,21 @@ export function HeroCarousel({ videos }: HeroCarouselProps) {
                             src={getThumbnail(activeVideo)}
                             alt={activeVideo.title}
                             fill
-                            className={cn("object-cover transition-opacity duration-1000", showVideo && !videoLoading ? "opacity-0" : "opacity-80")}
+                            className={cn("object-cover transition-opacity duration-1000", showVideo && !videoLoading ? "opacity-0" : "opacity-100")}
                             priority
                             quality={90}
                         />
 
-                        {/* Cinematic Gradients */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a14] via-[#0a0a14]/50 to-transparent" />
+                        {/* Cinematic Gradients - Lightened for better visibility */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a14] via-[#0a0a14]/40 to-transparent" />
                         <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a14] via-[#0a0a14]/20 to-transparent" />
-                        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a14]/60 via-transparent to-transparent h-40" />
+                        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a14]/60 via-transparent to-transparent h-32 md:h-40" />
                     </div>
                 </motion.div>
             </AnimatePresence>
 
             {/* Content Layer - Positioned Absolute */}
-            <div className="absolute inset-0 flex flex-col justify-center px-6 lg:px-20 z-20 pointer-events-none">
+            <div className="absolute inset-0 flex flex-col justify-end pb-20 md:justify-center md:pb-0 px-6 lg:px-20 z-20 pointer-events-none">
                 <div className="max-w-[1600px] w-full mx-auto pointer-events-auto">
                     <motion.div
                         key={`content-${activeVideo.id}`}
@@ -147,44 +150,69 @@ export function HeroCarousel({ videos }: HeroCarouselProps) {
                         {/* Tags / Badges */}
                         <div className="flex flex-wrap items-center gap-3">
                             {activeVideo.is_trending && (
-                                <span className="bg-[#E50914] text-white px-3 py-1 rounded text-[10px] md:text-xs font-black uppercase tracking-widest shadow-lg">
+                                <span className="bg-[#E50914] text-white px-3 py-1 rounded text-[10px] md:text-xs font-black uppercase tracking-widest shadow-lg transform rotate-1">
                                     #1 Trending
                                 </span>
                             )}
-                            <span className="bg-white/20 backdrop-blur-md text-white px-3 py-1 rounded text-[10px] md:text-xs font-bold uppercase tracking-wider border border-white/10">
+                            <span className="bg-white/10 backdrop-blur-md text-white px-3 py-1 rounded text-[10px] md:text-xs font-bold uppercase tracking-wider border border-white/10">
                                 {activeVideo.category_name || 'Movie'}
                             </span>
                         </div>
 
                         {/* Title - Image or Text */}
-                        <h1 className="text-3xl md:text-5xl lg:text-7xl xl:text-8xl font-black font-serif-display text-white leading-[1.1] md:leading-[0.9] drop-shadow-2xl text-shadow-lg mt-2 md:mt-0">
+                        <h1 className="text-4xl md:text-6xl lg:text-8xl font-black font-serif-display text-white leading-[1.1] md:leading-[0.9] drop-shadow-2xl text-shadow-lg mt-2 md:mt-0 tracking-tight">
                             {activeVideo.title}
                         </h1>
 
                         {/* Metadata line */}
-                        <div className="flex items-center gap-3 md:gap-6 text-white/90 font-medium text-xs md:text-base">
-                            <span className="text-white/70">{new Date(activeVideo.created_at).getFullYear()}</span>
-                            <span className="border border-white/30 px-2 rounded text-[10px] md:text-xs">{activeVideo.content_rating || 'U/A 13+'}</span>
-                            <span>{formatDuration(activeVideo.duration)}</span>
+                        <div className="flex items-center gap-4 text-white/90 font-medium text-xs md:text-sm tracking-wide">
+                            <span className="text-white/90">{new Date(activeVideo.created_at).getFullYear()}</span>
+                            <span className="text-white/40">•</span>
+                            <span className="border border-white/40 px-2 py-0.5 rounded text-[10px] md:text-xs bg-black/20">{activeVideo.content_rating || 'U/A 13+'}</span>
+                            {/* Hide duration if 0 */}
+                            {formatDuration(activeVideo.duration) && (
+                                <>
+                                    <span className="text-white/40">•</span>
+                                    <span>{formatDuration(activeVideo.duration)}</span>
+                                </>
+                            )}
                             {activeVideo.video_quality === '4K' && (
-                                <span className="px-1.5 py-0.5 bg-white/20 rounded text-[10px] font-bold border border-white/20">4K UHD</span>
+                                <>
+                                    <span className="text-white/40">•</span>
+                                    <span className="px-1.5 py-0.5 bg-white/20 rounded text-[10px] font-bold border border-white/20">4K UHD</span>
+                                </>
                             )}
                         </div>
 
                         {/* Description */}
-                        <p className="text-sm md:text-lg text-white/80 leading-relaxed line-clamp-2 md:line-clamp-3 font-medium max-w-xl drop-shadow-md">
-                            {activeVideo.description}
-                        </p>
+                        {showDescription && (
+                            <p className="text-sm md:text-lg text-white/80 leading-relaxed line-clamp-3 md:line-clamp-3 font-medium max-w-xl drop-shadow-md text-pretty">
+                                {activeVideo.description}
+                            </p>
+                        )}
 
                         {/* Buttons */}
-                        <div className="flex flex-wrap items-center gap-3 pt-2">
+                        <div className="flex flex-wrap items-center gap-4 pt-4">
                             <Link
                                 href={`/watch/${activeVideo.id}`}
-                                className="flex items-center gap-2 md:gap-3 bg-white text-black px-6 py-3 md:px-8 md:py-4 rounded-lg font-bold text-sm md:text-lg hover:bg-white/90 transition-all hover:scale-105 active:scale-95 shadow-xl shadow-white/5"
+                                className="flex items-center gap-2 md:gap-3 bg-white text-black px-8 py-3.5 md:px-10 md:py-4 rounded-lg font-bold text-sm md:text-lg hover:bg-white/90 transition-all hover:scale-105 active:scale-95 shadow-xl shadow-white/5"
                             >
-                                <Play className="fill-black w-4 h-4 md:w-6 md:h-6" />
+                                <Play className="fill-black w-5 h-5 md:w-6 md:h-6" />
                                 Play
                             </Link>
+
+                            <button
+                                onClick={() => {
+                                    // Could open a modal or just navigate to watch page but maybe focus on info
+                                    // usually scroll to details or open modal. For now, link to watch page as "More Info"
+                                    // or just a secondary action.
+                                    window.location.href = `/watch/${activeVideo.id}`;
+                                }}
+                                className="flex items-center gap-2 md:gap-3 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white px-6 py-3.5 md:px-8 md:py-4 rounded-lg font-bold text-sm md:text-lg transition-all hover:scale-105 active:scale-95 border border-white/10"
+                            >
+                                <Info className="w-5 h-5 md:w-6 md:h-6" />
+                                More Info
+                            </button>
                         </div>
                     </motion.div>
                 </div>
