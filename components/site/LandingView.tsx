@@ -118,10 +118,13 @@ function ReelsSection({ reels }: { reels: any[] }) {
                         <div className="absolute bottom-4 left-4 right-4 translate-y-2 group-hover:translate-y-0 transition-transform">
                             <div className="flex items-center gap-2 mb-2">
                                 <div className="w-6 h-6 rounded-full bg-white/20 relative overflow-hidden">
-                                    {/* Creator Avatar Fallback */}
-                                    <div className="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-white">
-                                        {reel.creator_name?.[0] || 'C'}
-                                    </div>
+                                    {reel.creator_image ? (
+                                        <Image src={reel.creator_image} alt={reel.creator_name || 'Creator'} fill className="object-cover" />
+                                    ) : (
+                                        <div className="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-white">
+                                            {reel.creator_name?.[0] || 'C'}
+                                        </div>
+                                    )}
                                 </div>
                                 <p className="text-xs font-bold text-white truncate">{reel.creator_name}</p>
                             </div>
