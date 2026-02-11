@@ -76,6 +76,7 @@ export function PublicNavbar() {
                         <Link href="/browse?cat=movies" className="text-sm font-semibold text-slate-600 dark:text-white/70 transition-colors hover:text-slate-900 dark:hover:text-white">Movies</Link>
                         <Link href="/browse?cat=series" className="text-sm font-semibold text-slate-600 dark:text-white/70 transition-colors hover:text-slate-900 dark:hover:text-white">Series</Link>
                         <Link href="/browse?cat=reels" className="text-sm font-semibold text-slate-600 dark:text-white/70 transition-colors hover:text-slate-900 dark:hover:text-white">Reels</Link>
+                        <Link href="/music" className="text-sm font-semibold text-slate-600 dark:text-white/70 transition-colors hover:text-slate-900 dark:hover:text-white">Music</Link>
                         <Link href="/browse?cat=originals" className="text-sm font-semibold text-slate-600 dark:text-white/70 transition-colors hover:text-slate-900 dark:hover:text-white">Originals</Link>
                     </div>
                 </div>
@@ -146,6 +147,7 @@ export function PublicNavbar() {
                         <Link href="/browse?cat=movies" className="text-lg font-semibold text-slate-700 dark:text-white/70">Movies</Link>
                         <Link href="/browse?cat=series" className="text-lg font-semibold text-slate-700 dark:text-white/70">Series</Link>
                         <Link href="/browse?cat=reels" className="text-lg font-semibold text-slate-700 dark:text-white/70">Reels</Link>
+                        <Link href="/music" className="text-lg font-semibold text-slate-700 dark:text-white/70">Music</Link>
                         <hr className="border-slate-200 dark:border-white/10" />
                         {status === 'authenticated' ? (
                             <Link href="/u/dashboard" className="text-lg font-semibold text-indigo-600 dark:text-indigo-400">

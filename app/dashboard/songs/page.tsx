@@ -3,10 +3,12 @@ import Link from 'next/link';
 import { Plus, Music, Mic2, Disc, Star } from 'lucide-react';
 import { SongList } from './SongList';
 
+export const dynamic = 'force-dynamic';
+
 export default async function SongsPage() {
     // 1. Fetch from API
-    const data = await fetchFromApi('/admin/songs');
-    const statsData = await fetchFromApi('/admin/stats');
+    const data = await fetchFromApi('/admin/songs', { cache: 'no-store' });
+    const statsData = await fetchFromApi('/admin/stats', { cache: 'no-store' });
 
     // Ideally fetch genres too if needed for filtering
     // const genresData = await fetchFromApi('/admin/genres/music');
