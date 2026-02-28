@@ -56,7 +56,7 @@ export async function SeriesPage() {
 
                 {/* Trending Row */}
                 <Section title="Trending Series" viewAllLink="/browse?cat=series&sort=trending">
-                    <div className="flex gap-4 overflow-x-auto pb-16 pt-20 px-6 lg:px-20 no-scrollbar -mx-6 lg:-mx-20">
+                    <div className="flex gap-4 overflow-x-auto pb-16 pt-20 px-6 lg:px-20 no-scrollbar">
                         {trendingSeries.map((series: any, idx: number) => (
                             <MediaCard key={series.id} video={series} type="SERIES" rank={idx + 1} />
                         ))}
@@ -65,7 +65,7 @@ export async function SeriesPage() {
 
                 {/* New Releases */}
                 <Section title="New Arrivals" viewAllLink="/browse?cat=series&sort=new">
-                    <div className="flex gap-4 overflow-x-auto pb-16 pt-20 px-6 lg:px-20 no-scrollbar -mx-6 lg:-mx-20">
+                    <div className="flex gap-4 overflow-x-auto pb-16 pt-20 px-6 lg:px-20 no-scrollbar">
                         {newReleases.map((series: any) => (
                             <MediaCard key={series.id} video={series} type="SERIES" />
                         ))}
@@ -75,7 +75,7 @@ export async function SeriesPage() {
                 {/* Genre Rows (Conditional) */}
                 {crimeSeries.length > 0 && (
                     <Section title="Crime & Thriller">
-                        <div className="flex gap-4 overflow-x-auto pb-16 pt-20 px-6 lg:px-20 no-scrollbar -mx-6 lg:-mx-20">
+                        <div className="flex gap-4 overflow-x-auto pb-16 pt-20 px-6 lg:px-20 no-scrollbar">
                             {crimeSeries.map((series: any) => (
                                 <MediaCard key={series.id} video={series} type="SERIES" />
                             ))}
@@ -85,7 +85,7 @@ export async function SeriesPage() {
 
                 {dramaSeries.length > 0 && (
                     <Section title="Dramatic Hits">
-                        <div className="flex gap-4 overflow-x-auto pb-16 pt-20 px-6 lg:px-20 no-scrollbar -mx-6 lg:-mx-20">
+                        <div className="flex gap-4 overflow-x-auto pb-16 pt-20 px-6 lg:px-20 no-scrollbar">
                             {dramaSeries.map((series: any) => (
                                 <MediaCard key={series.id} video={series} type="SERIES" />
                             ))}

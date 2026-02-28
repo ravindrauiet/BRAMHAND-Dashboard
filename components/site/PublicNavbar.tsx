@@ -2,12 +2,20 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Search, LogIn, Menu, X, Bell, Crown } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSession } from 'next-auth/react';
 
 export function PublicNavbar() {
+    return (
+        <Suspense fallback={<div className="h-20 w-full bg-transparent" />}>
+            <NavbarContent />
+        </Suspense>
+    );
+}
+
+function NavbarContent() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -45,6 +53,9 @@ export function PublicNavbar() {
 
     const [searchQuery, setSearchQuery] = useState('');
     const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const currentCat = searchParams?.get('cat');
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -72,12 +83,12 @@ export function PublicNavbar() {
 
                     {/* Desktop Navigation */}
                     <div className="hidden md:flex items-center gap-10">
-                        <Link href="/" className="text-sm font-bold text-[#fbbf24]">Home</Link>
-                        <Link href="/browse?cat=movies" className="text-sm font-semibold text-slate-600 dark:text-white/70 transition-colors hover:text-slate-900 dark:hover:text-white">Movies</Link>
-                        <Link href="/browse?cat=series" className="text-sm font-semibold text-slate-600 dark:text-white/70 transition-colors hover:text-slate-900 dark:hover:text-white">Series</Link>
-                        <Link href="/browse?cat=reels" className="text-sm font-semibold text-slate-600 dark:text-white/70 transition-colors hover:text-slate-900 dark:hover:text-white">Reels</Link>
-                        <Link href="/music" className="text-sm font-semibold text-slate-600 dark:text-white/70 transition-colors hover:text-slate-900 dark:hover:text-white">Music</Link>
-                        <Link href="/browse?cat=originals" className="text-sm font-semibold text-slate-600 dark:text-white/70 transition-colors hover:text-slate-900 dark:hover:text-white">Originals</Link>
+                        <Link href="/" className={`text-sm transition-colors ${pathname === '/' ? 'text-[#fbbf24] font-bold' : 'font-semibold text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white'}`}>Home</Link>
+                        <Link href="/browse?cat=movies" className={`text-sm transition-colors ${currentCat === 'movies' ? 'text-[#fbbf24] font-bold' : 'font-semibold text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white'}`}>Movies</Link>
+                        <Link href="/browse?cat=series" className={`text-sm transition-colors ${currentCat === 'series' ? 'text-[#fbbf24] font-bold' : 'font-semibold text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white'}`}>Series</Link>
+                        <Link href="/browse?cat=reels" className={`text-sm transition-colors ${currentCat === 'reels' ? 'text-[#fbbf24] font-bold' : 'font-semibold text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white'}`}>Reels</Link>
+                        <Link href="/music" className={`text-sm transition-colors ${pathname === '/music' ? 'text-[#fbbf24] font-bold' : 'font-semibold text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white'}`}>Music</Link>
+                        <Link href="/browse?cat=originals" className={`text-sm transition-colors ${currentCat === 'originals' ? 'text-[#fbbf24] font-bold' : 'font-semibold text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white'}`}>Originals</Link>
                     </div>
                 </div>
 
@@ -143,11 +154,12 @@ export function PublicNavbar() {
             {isMenuOpen && (
                 <div className="md:hidden absolute top-full left-0 right-0 bg-white dark:bg-[#0a0a14] border-t border-slate-200 dark:border-white/10 p-6 space-y-4 shadow-2xl transition-colors">
                     <nav className="flex flex-col gap-4">
-                        <Link href="/" className="text-lg font-bold text-[#fbbf24]">Home</Link>
-                        <Link href="/browse?cat=movies" className="text-lg font-semibold text-slate-700 dark:text-white/70">Movies</Link>
-                        <Link href="/browse?cat=series" className="text-lg font-semibold text-slate-700 dark:text-white/70">Series</Link>
-                        <Link href="/browse?cat=reels" className="text-lg font-semibold text-slate-700 dark:text-white/70">Reels</Link>
-                        <Link href="/music" className="text-lg font-semibold text-slate-700 dark:text-white/70">Music</Link>
+                        <Link href="/" onClick={() => setIsMenuOpen(false)} className={`text-lg ${pathname === '/' ? 'font-bold text-[#fbbf24]' : 'font-semibold text-slate-700 dark:text-white/70'}`}>Home</Link>
+                        <Link href="/browse?cat=movies" onClick={() => setIsMenuOpen(false)} className={`text-lg ${currentCat === 'movies' ? 'font-bold text-[#fbbf24]' : 'font-semibold text-slate-700 dark:text-white/70'}`}>Movies</Link>
+                        <Link href="/browse?cat=series" onClick={() => setIsMenuOpen(false)} className={`text-lg ${currentCat === 'series' ? 'font-bold text-[#fbbf24]' : 'font-semibold text-slate-700 dark:text-white/70'}`}>Series</Link>
+                        <Link href="/browse?cat=reels" onClick={() => setIsMenuOpen(false)} className={`text-lg ${currentCat === 'reels' ? 'font-bold text-[#fbbf24]' : 'font-semibold text-slate-700 dark:text-white/70'}`}>Reels</Link>
+                        <Link href="/music" onClick={() => setIsMenuOpen(false)} className={`text-lg ${pathname === '/music' ? 'font-bold text-[#fbbf24]' : 'font-semibold text-slate-700 dark:text-white/70'}`}>Music</Link>
+                        <Link href="/browse?cat=originals" onClick={() => setIsMenuOpen(false)} className={`text-lg ${currentCat === 'originals' ? 'font-bold text-[#fbbf24]' : 'font-semibold text-slate-700 dark:text-white/70'}`}>Originals</Link>
                         <hr className="border-slate-200 dark:border-white/10" />
                         {status === 'authenticated' ? (
                             <Link href="/u/dashboard" className="text-lg font-semibold text-indigo-600 dark:text-indigo-400">

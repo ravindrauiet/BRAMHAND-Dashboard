@@ -203,9 +203,6 @@ export function HeroCarousel({ videos }: HeroCarouselProps) {
 
                             <button
                                 onClick={() => {
-                                    // Could open a modal or just navigate to watch page but maybe focus on info
-                                    // usually scroll to details or open modal. For now, link to watch page as "More Info"
-                                    // or just a secondary action.
                                     window.location.href = `/watch/${activeVideo.id}`;
                                 }}
                                 className="flex items-center gap-2 md:gap-3 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white px-6 py-3.5 md:px-8 md:py-4 rounded-lg font-bold text-sm md:text-lg transition-all hover:scale-105 active:scale-95 border border-white/10"
