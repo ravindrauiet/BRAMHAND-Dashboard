@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Video, Music, Users, Settings, LogOut, Wallet, Tags, List, Bell, Film, Layers } from 'lucide-react';
+import { LayoutDashboard, Video, Music, Users, Settings, LogOut, Wallet, Tags, List, Bell, Film, Layers, MessageSquare } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import clsx from 'clsx';
 
@@ -17,6 +17,7 @@ const navItems = [
     { name: 'Categories', href: '/dashboard/categories', icon: List },
     { name: 'Genres', href: '/dashboard/genres', icon: Tags },
     { name: 'Notifications', href: '/dashboard/notifications', icon: Bell },
+    { name: 'Support', href: '/dashboard/support', icon: MessageSquare },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
 
