@@ -1,29 +1,56 @@
-import { fetchFromApi } from '@/lib/api'
-import { revalidatePath } from 'next/cache'
+'use server';
 
-export async function sendNotification(formData: FormData) {
-    const title = formData.get('title') as string
-    const message = formData.get('message') as string
+import { fetchFromApi } from '@/lib/api';
+import { revalidatePath } from 'next/cache';
 
+export async function sendPushNotification(payload: {
+    user_id?: number;
+    title: string;
+    body: string;
+}) {
     try {
-        await fetchFromApi('/notifications/broadcast', {
+        const result = await fetchFromApi('/admin/notifications/push', {
             method: 'POST',
-            body: JSON.stringify({ title, message })
+            body: JSON.stringify(payload),
         });
-
-        revalidatePath('/dashboard/notifications')
-        return { success: true }
-    } catch (error) {
-        console.error('Failed to send notification:', error)
-        return { success: false, error: 'Failed to send notification' }
+        revalidatePath('/dashboard/notifications');
+        return { success: true, message: result.message };
+    } catch (error: any) {
+        return { success: false, error: error.message || 'Failed to send push notification' };
     }
 }
 
-export async function getRecentNotifications() {
+export async function sendEmailNotification(payload: {
+    user_id?: number;
+    subject: string;
+    message: string;
+}) {
     try {
-        const response = await fetchFromApi('/notifications/system');
-        return response.notifications || []
-    } catch (error) {
-        return []
+        const result = await fetchFromApi('/admin/notifications/email', {
+            method: 'POST',
+            body: JSON.stringify(payload),
+        });
+        revalidatePath('/dashboard/notifications');
+        return { success: true, message: result.message };
+    } catch (error: any) {
+        return { success: false, error: error.message || 'Failed to send email' };
+    }
+}
+
+export async function getAnalytics() {
+    try {
+        const data = await fetchFromApi('/admin/notifications/analytics');
+        return data;
+    } catch {
+        return { summary: null, history: [], auto_stats: [] };
+    }
+}
+
+export async function getAllUsers() {
+    try {
+        const data = await fetchFromApi('/admin/users');
+        return data.users || [];
+    } catch {
+        return [];
     }
 }

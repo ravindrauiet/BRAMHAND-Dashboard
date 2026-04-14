@@ -58,7 +58,7 @@ export const authOptions: NextAuthOptions = {
         })
     ],
     pages: {
-        signIn: '/login',
+        signIn: '/tirhuta/super/login/admin',
     },
     callbacks: {
         async jwt({ token, user }: { token: any, user: any }) {

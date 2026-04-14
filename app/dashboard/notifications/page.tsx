@@ -1,19 +1,18 @@
-import { getRecentNotifications } from './actions';
-import { NotificationComposer } from './NotificationComposer';
+import { getAnalytics, getAllUsers } from './actions';
+import { NotificationCenter } from './NotificationComposer';
 
 export default async function NotificationsPage() {
-    const notifications = await getRecentNotifications();
+    const [analytics, users] = await Promise.all([getAnalytics(), getAllUsers()]);
 
     return (
-        <div className="max-w-7xl mx-auto">
-            <div className="mb-10 text-center max-w-2xl mx-auto">
-                <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-4 tracking-tight">System Broadcast</h1>
-                <p className="text-lg text-slate-500 dark:text-slate-400">
-                    Send push notifications to your mobile app users. Announcements will appear instantly on their devices.
+        <div className="max-w-7xl mx-auto space-y-8">
+            <div>
+                <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Notification Center</h1>
+                <p className="text-slate-500 dark:text-slate-400 mt-1">
+                    Send push notifications & emails to users. Track delivery and engagement.
                 </p>
             </div>
-
-            <NotificationComposer initialHistory={notifications} />
+            <NotificationCenter analytics={analytics} users={users} />
         </div>
     );
 }
