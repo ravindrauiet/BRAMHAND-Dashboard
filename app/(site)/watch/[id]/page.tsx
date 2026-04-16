@@ -1,4 +1,4 @@
-import { fetchPublicApi, fetchFromApi } from '@/lib/api';
+import { fetchPublicApi } from '@/lib/api';
 import { PublicNavbar } from '@/components/site/PublicNavbar';
 import { notFound } from 'next/navigation';
 import { VideoInteractions } from '@/components/site/VideoInteractions';
@@ -7,12 +7,13 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Share2, MoreVertical, Layers, ChevronRight } from 'lucide-react';
 import { VideoPlayer } from '@/components/site/VideoPlayer';
+import AppBanner from '@/components/site/AppBanner';
 
 export default async function WatchPage({ params }: { params: { id: string } }) {
     const videoId = params.id;
 
-    // 1. Fetch Video Data (Using fetchFromApi to get user-specific state like last_position)
-    const videoRes = await fetchFromApi(`/videos/${videoId}`);
+    // 1. Fetch Video Data — public endpoint, no auth required
+    const videoRes = await fetchPublicApi(`/videos/${videoId}`);
 
     if (!videoRes || !videoRes.video) {
         return notFound();
@@ -47,6 +48,8 @@ export default async function WatchPage({ params }: { params: { id: string } }) 
 
     return (
         <div className="min-h-screen bg-[#0f0f0f] text-white font-sans">
+            {/* Smart app banner — shown only on Android/iOS browsers */}
+            <AppBanner videoId={video.id} />
             <PublicNavbar />
 
             {/* Cinematic Player Container */}
