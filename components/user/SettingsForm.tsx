@@ -239,6 +239,21 @@ export default function SettingsForm({ user }: SettingsFormProps) {
                             </select>
                         </div>
 
+                        {/* Fix #15: App language selector was missing */}
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest pl-2">App Language</label>
+                            <select
+                                value={formData.app_language}
+                                onChange={(e) => setFormData({ ...formData, app_language: e.target.value })}
+                                className="w-full px-5 py-4 bg-white/50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-2xl outline-none font-bold text-sm"
+                            >
+                                <option value="English">English (Default)</option>
+                                <option value="Hindi">Hindi</option>
+                                <option value="Bhojpuri">Bhojpuri</option>
+                                <option value="Maithili">Maithili</option>
+                            </select>
+                        </div>
+
                         <div className="flex items-center justify-between p-5 bg-slate-100/50 dark:bg-white/5 rounded-2xl border border-slate-200/50 dark:border-white/5">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-amber-500/10 rounded-lg text-amber-500">

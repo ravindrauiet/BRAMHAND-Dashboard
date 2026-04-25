@@ -1,62 +1,93 @@
 import { fetchPublicApi } from '@/lib/api';
 import { PublicNavbar } from '@/components/site/PublicNavbar';
 import { PublicFooter } from '@/components/site/PublicFooter';
-import { Sparkles, Video, Clapperboard, Rocket } from 'lucide-react';
+import { Rocket, ShieldCheck, Zap, Globe } from 'lucide-react';
 import UploadForm from '../upload-reel/form';
 
 export default async function UploadVideoPage() {
-    let categories = [];
+    let categories: any[] = [];
     try {
         const data = await fetchPublicApi('/videos/categories');
         categories = data.categories || [];
-    } catch (error) {
-        console.error("Failed to fetch categories", error);
-        // Fallback or empty categories
+    } catch {
+        // continue with empty list — form handles empty gracefully
     }
 
     return (
-        <div className="min-h-screen bg-[#fafafa] dark:bg-[#050505] text-slate-900 dark:text-slate-100 flex flex-col relative z-0">
+        <div className="min-h-screen bg-[#fafafa] dark:bg-[#050505] text-slate-900 dark:text-slate-100 flex flex-col relative overflow-x-hidden">
             <PublicNavbar />
 
-            <main className="flex-1 pt-32 pb-24 relative overflow-hidden flex flex-col">
-                {/* Background Decorations - Lower z-index */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 pointer-events-none overflow-hidden">
-                    <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-500/10 blur-[100px] rounded-full mix-blend-multiply dark:mix-blend-screen" />
-                    <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-500/10 blur-[100px] rounded-full mix-blend-multiply dark:mix-blend-screen" />
-                </div>
+            {/* Ambient glows */}
+            <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+                <div className="absolute top-[-15%] left-[-10%] w-[55%] h-[55%] bg-indigo-500/8 dark:bg-indigo-500/12 blur-[120px] rounded-full" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[45%] h-[45%] bg-purple-500/8 dark:bg-purple-500/12 blur-[120px] rounded-full" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[30%] h-[30%] bg-sky-500/5 dark:bg-sky-500/8 blur-[100px] rounded-full" />
+            </div>
 
-                <div className="max-w-4xl mx-auto px-4 relative z-10 w-full">
-                    <div className="mb-12 text-center space-y-6">
-                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-[0.2em] border border-indigo-500/20 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-700">
-                            <Rocket className="w-3 h-3" /> Creator Studio
+            <main className="flex-1 pt-28 pb-24 flex flex-col">
+                <div className="max-w-4xl mx-auto px-4 w-full space-y-12">
+
+                    {/* ── Hero ── */}
+                    <div className="text-center space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-[0.2em] border border-indigo-500/20 shadow-sm">
+                            <Rocket className="w-3 h-3" /> Creator Studio · Video Upload
                         </div>
+
                         <h1 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white tracking-tighter uppercase leading-[0.9]">
-                            Upload your <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-600">Masterpiece</span>
+                            Upload your{' '}
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
+                                Masterpiece
+                            </span>
                         </h1>
-                        <p className="text-xs md:text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest max-w-lg mx-auto leading-relaxed">
-                            Share your story with the world. We support high-quality uploads up to 5GB per video.
-                        </p>
-                    </div>
 
-                    <div className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-[40px] p-1 md:p-8 shadow-2xl shadow-indigo-500/10 border border-white/50 dark:border-white/10 relative overflow-hidden ring-1 ring-white/20">
-                        <div className="relative z-10">
-                            <UploadForm categories={categories} type="VIDEO" />
+                        <p className="text-xs md:text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest max-w-md mx-auto leading-loose">
+                            Share your story with the world. High-quality uploads up to 5 GB.
+                        </p>
+
+                        {/* Feature pills */}
+                        <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+                            {[
+                                { icon: ShieldCheck, label: 'Secure upload' },
+                                { icon: Zap,         label: 'Fast CDN delivery' },
+                                { icon: Globe,       label: 'Global audience' },
+                            ].map(({ icon: Icon, label }) => (
+                                <span key={label} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/60 dark:bg-white/5 border border-slate-200/60 dark:border-white/10 text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                                    <Icon className="w-3 h-3 text-indigo-500" /> {label}
+                                </span>
+                            ))}
                         </div>
                     </div>
 
-                    {/* Features Help */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16 pb-10">
+                    {/* ── Form card ── */}
+                    <div className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-2xl rounded-[40px] p-6 md:p-10 shadow-2xl shadow-indigo-500/10 border border-white/50 dark:border-white/10 ring-1 ring-inset ring-white/20 dark:ring-white/5 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
+                        <UploadForm categories={categories} type="VIDEO" />
+                    </div>
+
+                    {/* ── Guidelines ── */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pb-4 animate-in fade-in duration-700 delay-300">
                         {[
-                            { icon: <Video className="w-5 h-5" />, title: "High Definition", desc: "Support for 4K and HDR content" },
-                            { icon: <Clapperboard className="w-5 h-5" />, title: "Creator First", desc: "Keep 100% of your ownership" },
-                            { icon: <Sparkles className="w-5 h-5" />, title: "Smart SEO", desc: "Automatic tag generation" }
-                        ].map((f, i) => (
-                            <div key={i} className="flex flex-col items-center text-center space-y-3 p-6 rounded-3xl bg-white/40 dark:bg-white/5 border border-white/50 dark:border-white/5 hover:bg-white/60 dark:hover:bg-white/10 transition-colors">
-                                <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
-                                    {f.icon}
+                            {
+                                emoji: '🎬',
+                                title: 'Best Format',
+                                desc: 'H.264 MP4 at 1080p for maximum compatibility and quality.',
+                            },
+                            {
+                                emoji: '🖼️',
+                                title: 'Add a Thumbnail',
+                                desc: '16:9 JPG or PNG. A great cover boosts clicks by up to 40%.',
+                            },
+                            {
+                                emoji: '🏷️',
+                                title: 'Tag it well',
+                                desc: 'Relevant tags help your video appear in search & recommendations.',
+                            },
+                        ].map((item) => (
+                            <div key={item.title} className="flex gap-4 items-start p-5 rounded-2xl bg-white/40 dark:bg-white/5 border border-white/50 dark:border-white/5 hover:bg-white/60 dark:hover:bg-white/10 transition-colors">
+                                <span className="text-2xl flex-shrink-0">{item.emoji}</span>
+                                <div>
+                                    <h3 className="text-xs font-black uppercase tracking-widest text-slate-900 dark:text-white mb-1">{item.title}</h3>
+                                    <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 leading-relaxed">{item.desc}</p>
                                 </div>
-                                <h3 className="text-xs font-black uppercase tracking-widest text-slate-900 dark:text-white">{f.title}</h3>
-                                <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tighter leading-tight">{f.desc}</p>
                             </div>
                         ))}
                     </div>
