@@ -95,7 +95,7 @@ export default function ContentManagement({ videos, reels, categories }: Content
         if (!confirm(`Permanently delete ${selectedIds.size} item${selectedIds.size > 1 ? 's' : ''}?`)) return;
         setIsBulkDeleting(true);
         setError(null);
-        const result = await bulkDeleteVideos([...selectedIds]);
+        const result = await bulkDeleteVideos(Array.from(selectedIds));
         if (result.success) {
             setSelectedIds(new Set());
             router.refresh(); // Fix #5
