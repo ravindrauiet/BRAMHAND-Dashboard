@@ -13,25 +13,26 @@ import { HeroCarousel } from '@/components/site/HeroCarousel';
 
 // --- types ---
 interface LandingViewProps {
-    featuredVideos: any[];
-    trendingVideos: any[];
-    latestVideos: any[];
-    seriesList: any[];
-    reelsVideos: any[];
+    heroVideos: any[];
+    sections: Array<{
+        id: string;
+        title: string;
+        items: any[];
+        type?: 'MOVIE' | 'SERIES' | 'REEL';
+        viewAllLink: string;
+    }>;
+    continueWatching: any[];
 }
 
-export function LandingView({ featuredVideos, trendingVideos, latestVideos, seriesList, reelsVideos }: LandingViewProps) {
-    // Combine featured and trending for a richer carousel if needed, or just use featured
-    // Netflix often mixes them. Let's pass featuredVideos as the primary source.
-
-    // Data filtering for specialized rows
-    const movies = latestVideos;
-    const series = seriesList;
+export function LandingView({ heroVideos, sections, continueWatching }: LandingViewProps) {
+    const reelsSection = sections.find((section) => section.id === 'trending-shorts');
+    const primarySections = sections.filter((section) => section.id !== 'trending-shorts');
+    const originals = heroVideos.slice(1, 5);
 
     return (
         <div className="min-h-screen bg-[#0a0a14] font-sans selection:bg-[#fbbf24]/30 overflow-x-hidden">
             {/* Cinematic Hero Carousel */}
-            <HeroCarousel videos={featuredVideos} />
+            <HeroCarousel videos={heroVideos} />
 
             <main className="relative z-10 -mt-12 md:-mt-20 space-y-16 pb-20">
                 {/* Check Filters (Floating) */}
@@ -40,43 +41,88 @@ export function LandingView({ featuredVideos, trendingVideos, latestVideos, seri
                 </div>
 
                 <div className="space-y-16 px-6 lg:px-20 mx-auto max-w-[1600px]">
-                    {/* Blockbuster Movies Row */}
-                    <Section title="Blockbuster Movies" viewAllLink="/browse?cat=movies">
-                        <div className="flex gap-4 overflow-x-auto pb-16 pt-20 px-4 no-scrollbar -mx-4">
-                            {movies.map((video) => (
-                                <MediaCard key={video.id} video={video} type="MOVIE" />
-                            ))}
-                        </div>
-                    </Section>
+                    {continueWatching.length > 0 && <ContinueWatchingSection items={continueWatching} />}
 
-                    {/* Trending Now (Using Trending Data) */}
-                    <Section title="Trending Now" viewAllLink="/browse?cat=all&sort=trending">
-                        <div className="flex gap-4 overflow-x-auto pb-16 pt-20 px-4 no-scrollbar -mx-4">
-                            {trendingVideos.map((video, idx) => (
-                                <MediaCard key={video.id} video={video} type="MOVIE" rank={idx + 1} />
-                            ))}
-                        </div>
-                    </Section>
+                    {primarySections.map((section) => (
+                        <Section key={section.id} title={section.title} viewAllLink={section.viewAllLink}>
+                            <div className="flex gap-4 overflow-x-auto pb-16 pt-20 px-4 no-scrollbar -mx-4">
+                                {section.items.map((video, idx) => (
+                                    <MediaCard
+                                        key={`${section.id}-${video.id}`}
+                                        video={video}
+                                        type={section.type === 'SERIES' ? 'SERIES' : 'MOVIE'}
+                                        rank={section.id === 'trending-now' ? idx + 1 : undefined}
+                                    />
+                                ))}
+                            </div>
+                        </Section>
+                    ))}
 
-                    {/* Popular Series Row */}
-                    <Section title="Binge-Worthy Series" viewAllLink="/browse?cat=series">
-                        <div className="flex gap-4 overflow-x-auto pb-16 pt-20 px-4 no-scrollbar -mx-4">
-                            {series.map((video) => (
-                                <MediaCard key={video.id} video={video} type="SERIES" />
-                            ))}
-                        </div>
-                    </Section>
-
-                    {/* Vertical Reels Strip */}
-                    <ReelsSection reels={reelsVideos} />
+                    {reelsSection && <ReelsSection reels={reelsSection.items} />}
 
                     {/* Originals / Editor's Choice */}
-                    {featuredVideos.length > 1 && (
-                        <OriginalsSection originals={featuredVideos.slice(1)} />
+                    {originals.length > 0 && (
+                        <OriginalsSection originals={originals} />
                     )}
                 </div>
             </main>
         </div>
+    );
+}
+
+function ContinueWatchingSection({ items }: { items: any[] }) {
+    return (
+        <section className="rounded-[32px] border border-white/10 bg-[linear-gradient(135deg,rgba(251,191,36,0.12),rgba(15,23,42,0.75))] p-6 md:p-8">
+            <div className="mb-6 flex items-end justify-between">
+                <div>
+                    <span className="text-[#fbbf24] font-black uppercase tracking-[0.3em] text-xs">For You</span>
+                    <h2 className="mt-2 text-3xl font-serif-display font-bold text-white">Continue Watching</h2>
+                </div>
+                <Link href="/u/history" className="text-sm font-bold text-white/70 hover:text-white uppercase tracking-widest flex items-center gap-1">
+                    View History <ChevronRight className="w-4 h-4" />
+                </Link>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {items.map((item) => {
+                    const duration = Number(item.duration || 0);
+                    const lastPosition = Number(item.last_position || 0);
+                    const progress = duration > 0 ? Math.min((lastPosition / duration) * 100, 100) : 0;
+
+                    return (
+                        <Link
+                            href={`/watch/${item.id}`}
+                            key={item.view_id || item.id}
+                            className="group overflow-hidden rounded-2xl border border-white/10 bg-black/30 transition-colors hover:bg-white/10"
+                        >
+                            <div className="relative aspect-video overflow-hidden">
+                                <Image
+                                    src={getThumbnail(item)}
+                                    alt={item.title}
+                                    fill
+                                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                />
+                                <div className="absolute inset-x-0 bottom-0 h-1.5 bg-white/10">
+                                    <div className="h-full bg-[#fbbf24]" style={{ width: `${progress}%` }} />
+                                </div>
+                            </div>
+                            <div className="space-y-2 p-4">
+                                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.25em] text-[#fbbf24]">
+                                    <Clock className="h-3.5 w-3.5" />
+                                    Resume
+                                </div>
+                                <h3 className="line-clamp-1 text-lg font-bold text-white">{item.title}</h3>
+                                <p className="line-clamp-1 text-sm text-white/60">{item.creator_name}</p>
+                                <div className="flex items-center justify-between text-xs text-white/60">
+                                    <span>{Math.round(progress)}% watched</span>
+                                    <span>{formatDuration(duration) || 'In progress'}</span>
+                                </div>
+                            </div>
+                        </Link>
+                    );
+                })}
+            </div>
+        </section>
     );
 }
 

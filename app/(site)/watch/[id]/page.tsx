@@ -1,11 +1,11 @@
-import { fetchPublicApi } from '@/lib/api';
+import { fetchFromApi, fetchPublicApi } from '@/lib/api';
 import { PublicNavbar } from '@/components/site/PublicNavbar';
 import { notFound } from 'next/navigation';
 import { VideoInteractions } from '@/components/site/VideoInteractions';
 import { CommentsSection } from './CommentsSection';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Share2, MoreVertical, Layers, ChevronRight } from 'lucide-react';
+import { Share2, MoreVertical, Layers, ChevronRight, Clock3, Languages, BadgeInfo, Sparkles } from 'lucide-react';
 import { VideoPlayer } from '@/components/site/VideoPlayer';
 import AppBanner from '@/components/site/AppBanner';
 
@@ -13,7 +13,7 @@ export default async function WatchPage({ params }: { params: { id: string } }) 
     const videoId = params.id;
 
     // 1. Fetch Video Data — public endpoint, no auth required
-    const videoRes = await fetchPublicApi(`/videos/${videoId}`);
+    const videoRes = await fetchFromApi(`/videos/${videoId}`).catch(() => fetchPublicApi(`/videos/${videoId}`));
 
     if (!videoRes || !videoRes.video) {
         return notFound();
@@ -25,17 +25,25 @@ export default async function WatchPage({ params }: { params: { id: string } }) 
     // 2. Conditional Fetching based on Type
     let sidebarData = [];
     let sidebarType = 'related'; // 'related' or 'episodes'
+    let sidebarTitle = 'More Like This';
 
     if (isSeriesEpisode) {
         const seriesRes = await fetchPublicApi(`/series/${video.series_id}`);
         if (seriesRes?.series?.episodes) {
             sidebarData = seriesRes.series.episodes;
             sidebarType = 'episodes';
+            sidebarTitle = 'Episodes';
         }
     } else {
-        const relatedRes = await fetchPublicApi(`/videos?category_id=${video.category_id}&limit=10&exclude_series=true`);
-        // Filter out current video
-        sidebarData = relatedRes?.videos?.filter((v: any) => v.id !== video.id) || [];
+        const relatedRes = await fetchPublicApi(`/videos/${video.id}/recommendations?limit=10`);
+        if (relatedRes?.videos?.length) {
+            sidebarData = relatedRes.videos;
+            sidebarTitle = relatedRes?.reason || 'More Like This';
+        } else {
+            const fallbackRelatedRes = await fetchPublicApi(`/videos?category_id=${video.category_id}&limit=10&exclude_series=true`);
+            sidebarData = fallbackRelatedRes?.videos?.filter((v: any) => v.id !== video.id) || [];
+            sidebarTitle = 'Up Next';
+        }
     }
 
     const formatDuration = (seconds?: number | null) => {
@@ -123,6 +131,40 @@ export default async function WatchPage({ params }: { params: { id: string } }) 
                             </p>
                         </div>
 
+                        <div className="grid gap-4 md:grid-cols-3">
+                            <InfoChip icon={Clock3} label="Runtime" value={formatDuration(video.duration) || 'Just added'} />
+                            <InfoChip icon={Languages} label="Language" value={video.language || 'Hindi'} />
+                            <InfoChip icon={BadgeInfo} label="Rating" value={video.content_rating || 'U/A'} />
+                        </div>
+
+                        {(video.tags?.length > 0 || video.cast?.length > 0) && (
+                            <div className="rounded-2xl border border-white/10 bg-[#171717] p-5">
+                                <div className="mb-4 flex items-center gap-2 text-sm font-bold text-white">
+                                    <Sparkles className="h-4 w-4 text-purple-400" />
+                                    Title Details
+                                </div>
+                                {video.tags?.length > 0 && (
+                                    <div className="mb-4 flex flex-wrap gap-2">
+                                        {video.tags.slice(0, 8).map((tag: any, index: number) => (
+                                            <span key={`${tag}-${index}`} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-white/70">
+                                                {typeof tag === 'string' ? tag : tag?.name || 'Tag'}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+                                {video.cast?.length > 0 && (
+                                    <p className="text-sm text-gray-300">
+                                        <span className="font-semibold text-white">Cast:</span>{' '}
+                                        {video.cast
+                                            .slice(0, 5)
+                                            .map((member: any) => typeof member === 'string' ? member : member?.name || member?.title)
+                                            .filter(Boolean)
+                                            .join(', ')}
+                                    </p>
+                                )}
+                            </div>
+                        )}
+
                         {/* Comments Section */}
                         <div className="pt-4">
                             <CommentsSection videoId={parseInt(videoId)} />
@@ -188,7 +230,7 @@ export default async function WatchPage({ params }: { params: { id: string } }) 
                         ) : (
                             // MOVIE LAYOUT: Up Next Logic
                             <>
-                                <h2 className="text-xl font-bold mb-6">Up Next</h2>
+                                <h2 className="text-xl font-bold mb-6">{sidebarTitle}</h2>
                                 <div className="space-y-4">
                                     {sidebarData.map((relVideo: any) => (
                                         <Link href={`/watch/${relVideo.id}`} key={relVideo.id} className="flex gap-3 group">
@@ -227,6 +269,18 @@ export default async function WatchPage({ params }: { params: { id: string } }) 
 
                 </div>
             </div>
+        </div>
+    );
+}
+
+function InfoChip({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
+    return (
+        <div className="rounded-2xl border border-white/10 bg-[#171717] p-4">
+            <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.25em] text-gray-500">
+                <Icon className="h-4 w-4" />
+                {label}
+            </div>
+            <div className="text-sm font-semibold text-white">{value}</div>
         </div>
     );
 }
